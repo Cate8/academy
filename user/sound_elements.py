@@ -8,8 +8,6 @@ from scipy.signal import firwin, lfilter  # filters
 
 
 
-
-
 class SoundR:
     def __init__(self, sampleRate=44100, channelsOut=2, latency='low'):
 
