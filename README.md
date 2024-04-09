@@ -8,7 +8,7 @@ Package to manage our academy.
 
 2. Download the package:
 
-    `git clone https://delaRochaLab@bitbucket.org/delaRochaLab/academy.git`
+    `git clone git@github.com:Cate8/academy.git`
 
 3. Go to the package directory.
 
@@ -17,16 +17,8 @@ Package to manage our academy.
 4. Install it (remember to have your desired environment activated):
 
     `pip install -e .`
-
-5. Install requirements.txt
-
-    `pip install -r requirements.txt --upgrade`
-
-6. Uninstall the original pybpod-api package to use the modified version
-
-    `pip uninstall pybpod-api`
     
-7. Run it:
+5. Run it:
 
     `academy`
     
