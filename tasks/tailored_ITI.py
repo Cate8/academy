@@ -21,9 +21,10 @@ import random
 import numpy as np
 import warnings
 from scipy.signal import firwin, lfilter
+import random
 
 
-class S4(Task):
+class tailored_ITI(Task):
 
     def __init__(self):
         super().__init__()
@@ -38,13 +39,12 @@ class S4(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        self.prob_right_values = [0.9,0.8,0.7]  # if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
-
-
+        self.prob_right_values = [0.9,0.8,0.7,0.6]  # if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        self.block_type = "fixed"
+        self.block_type = "exp"
         #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
         self.prob_block_type = 'rdm_values'
@@ -85,6 +85,7 @@ class S4(Task):
                 x[0:] = mean_x
             elif x_type == "exp":
                 x = np.random.geometric(1 / mean_x, (N_blocks, 1))
+                x = np.clip(x, 20, 60)
             else:
                 Warning('Blocked type not supported')
             return x.flatten()
@@ -168,7 +169,30 @@ class S4(Task):
             x = np.delete(x, 0, axis=0)
             print("x: " + str(x))
             return x
+        
+                # ITIs truncated exponential distribution 
+        lambda_param = 0.2  # this is the mean of the distribution, (1/5 so 5 seconds)
 
+        # funtion to generate the truncated exponential distribution for the ITIs
+        def generate_trial_values(lambda_param, max_value, num_values):
+            trial_values = []
+            for _ in range(num_values):
+                while True:
+                    value = random.expovariate(lambda_param)
+                    if value <= max_value:
+                        trial_values.append(value)
+                        break
+            return trial_values
+
+        # function to obtain the values
+        def custom_random_iti(num_trials, num_values_per_trial):
+            lambda_parameter = 0.2  # Parametro lambda per la distribuzione esponenziale
+            max_value = 30  # Valore massimo troncato
+            all_values = []
+            for _ in range(num_trials):
+                trial_values = generate_trial_values(lambda_parameter, max_value, num_values_per_trial)
+                all_values.extend(trial_values)
+            return all_values
 
                 #Generate the vector with the block duration (in trials)  for each block
         self.block_duration_vec = generate_block_duration_vec(x_type= self.block_type, mean_x= self.mean_x, N_blocks=self.N_blocks)
@@ -179,12 +203,13 @@ class S4(Task):
                 #Generate the binary vector with the Right (1) and Left (0) rewarded sides in each trial
         self.reward_side_vec_fixed_prob = generate_blocked_reward_side_vec(self.N_blocks, self.block_duration_vec, self.probs_vector)
 
-
+                #Generate the vector tailored ITIs values (from 1 to 30 sec, mean=5 sec)
+        self.random_iti_values = custom_random_iti(self.trials_max, 1)
 
         print("block_duration_vec: ", self.block_duration_vec)
         print("probs_vector: ", self.probs_vector)
         print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
-
+        print("Tailored ITI values: ", self.random_iti_values)
 
     def configure_gui(self):  # Variables that appear in the GUI
         self.gui_input = ['trials_max']
@@ -194,13 +219,14 @@ class S4(Task):
         self.probability = self.reward_side_vec_fixed_prob[self.current_trial][0]
         self.reward_side_number = self.reward_side_vec_fixed_prob[self.current_trial][1]
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
+        self.random_iti = self.random_iti_values[self.current_trial]
+
 
         print("current_trial: ", self.current_trial)
         print("block_identity: ", self.block_identity)
         print("probability: ", self.probability)
         print("reward_side_number: ", self.reward_side_number)
-
-
+        #print("ITI_duration: ", self.random_iti)
 
         # input("escribe algo: ")
 
@@ -269,21 +295,21 @@ class S4(Task):
 
         self.sma.add_state(
             state_name='wrong_side',
-            state_timer=1,
+            state_timer=0.5,
             state_change_conditions={Bpod.Events.Tup: 'timeout'},
             output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
         )
 
         self.sma.add_state(
             state_name='timeout',
-            state_timer=2,
+            state_timer=0.2,
             state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
             output_actions=[]
         )
 
         self.sma.add_state(
             state_name='drink_delay',
-            state_timer=2,
+            state_timer=self.random_iti,
             state_change_conditions={Bpod.Events.Tup: 'exit'},
             output_actions=[]
         )
@@ -324,4 +350,5 @@ class S4(Task):
         self.register_value('list_prob_R_values', self.prob_right_values)
         self.register_value('outcome', self.outcome)
         self.register_value('reward_drunk', self.reward_drunk)
+        self.register_value('iti_duration', self.random_iti)
 

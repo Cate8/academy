@@ -281,7 +281,7 @@ class non_fixed_blocks(Task):
 
         self.sma.add_state(
             state_name='timeout',
-            state_timer=0,
+            state_timer=0.2,
             state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
             output_actions=[]
         )

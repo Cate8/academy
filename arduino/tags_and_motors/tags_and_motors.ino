@@ -27,6 +27,7 @@
 //#define ANGLECLOSE2 182
 //#define ANGLESEMICLOSE2 165
 //#define CELLCALIBRATION 850
+//#define MINWEIGHT 5
 
 //MV2
 //#define ANGLEOPEN1 95
@@ -35,6 +36,7 @@
 //#define ANGLECLOSE2 112
 //#define ANGLESEMICLOSE2 95
 //#define CELLCALIBRATION 950
+//#define MINWEIGHT 5
 
 //MV3
 //#define ANGLEOPEN1 30
@@ -42,17 +44,19 @@
 //#define ANGLEOPEN2 52
 //#define ANGLECLOSE2 80
 //#define ANGLESEMICLOSE2 60
-//#define CELLCALIBRATION 1050
+//#define CELLCALIBRATION 800
+//#define MINWEIGHT 10
 
 
 
-//CATE1
-#define ANGLEOPEN1 65
-#define ANGLECLOSE1 35
-#define ANGLEOPEN2 52
-#define ANGLECLOSE2 80
-#define ANGLESEMICLOSE2 60
+//cate
+#define ANGLEOPEN1 40
+#define ANGLECLOSE1 15
+#define ANGLEOPEN2 50
+#define ANGLECLOSE2 85
+#define ANGLESEMICLOSE2 40
 #define CELLCALIBRATION 1070
+#define MINWEIGHT 10
 
 
 // scale
@@ -284,7 +288,6 @@ void tareScale()
 void getWeight()
 {
   float result = LoadCell.get_units(5);
-  result = abs(result);
   Serial.print("Weight*");
   Serial.print(result);
 }
@@ -435,23 +438,10 @@ void loop()
   if (scaleOn) {
     float result = LoadCell.get_units(5);
     result = abs(result);
-    if (result > 5)
+    if (result > MINWEIGHT)
     {
       Serial.print("Weight:");
       Serial.print(result);
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

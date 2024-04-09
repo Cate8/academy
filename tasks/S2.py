@@ -84,7 +84,7 @@ class S2(Task):
         
         self.sma.add_state(
             state_name='side_light',
-            state_timer=300,
+            state_timer=10,
             state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.poke_side: 'water_delivery'},
             output_actions=[self.light_LED]
             )
@@ -98,7 +98,7 @@ class S2(Task):
 
         self.sma.add_state(
             state_name='drink_delay',
-            state_timer=5,
+            state_timer=2,
             state_change_conditions={Bpod.Events.Tup:'exit'},
             output_actions=[])
 

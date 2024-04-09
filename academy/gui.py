@@ -284,10 +284,10 @@ class Gui(tk.Frame):
 
             # cameras
             self.image_label1 = tk.Label(self, anchor='w', justify='left')
-            self.image_label1.place(x=640, y=0, width=640, height=380)
+            self.image_label1.place(x=640, y=0, width=640, height=480)
 
             self.image_label2 = tk.Label(self, anchor='w', justify='left')
-            self.image_label2.place(x=0, y=480, width=640, height=340)
+            self.image_label2.place(x=0, y=480, width=640, height=480)
 
             self.image_label3 = tk.Label(self, anchor='w', justify='left')
             self.image_label3.place(x=0, y=0, width=640, height=480)
@@ -304,7 +304,7 @@ class Gui(tk.Frame):
             # plots
             try:
                 self.canvas = FigureCanvasTkAgg(self.fig, master=self)
-                self.canvas.get_tk_widget().place(x=640, y=380, width=1210, height=645)
+                self.canvas.get_tk_widget().place(x=640, y=480, width=1210, height=545)
             except:
                 utils.log('Academy', ' not created in rt_plots', 'ERROR')
                 pass
@@ -655,7 +655,7 @@ class Gui(tk.Frame):
     def update_image(self):
         try:
             frame = cam1.image_queue.get_nowait()
-            a = Image.fromarray(frame[20:400, :, :])
+            a = Image.fromarray(frame)
             b = ImageTk.PhotoImage(image=a, master=self.window)
             self.image_label1.configure(image=b)
             self.image_label1._image_cache = b  # avoid garbage collection

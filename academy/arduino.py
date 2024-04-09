@@ -66,7 +66,7 @@ class Arduino:
                 if ':' in tag:
                     try:
                         position = tag.index(':')
-                        weight = str(float(tag[position + 1:]))
+                        weight = str(abs(float(tag[position + 1:])))
                         value = 'w', weight
                         queues.tags.put(value)
                     except:
@@ -75,7 +75,7 @@ class Arduino:
                 elif '*' in tag:
                     try:
                         position = tag.index('*')
-                        weight = str(float(tag[position + 1:]))
+                        weight = str(abs(float(tag[position + 1:])))
                         value = 'p', weight
                         queues.tags.put(value)
                     except:

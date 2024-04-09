@@ -20,7 +20,7 @@ class SoundR:
             device = 1
 
         sd.default.device = device
-        self.soundVec = self.whiteNoiseGen(1.0, 2000, 20000, 0.5, FsOut=44100, Fn=1000)
+        self.soundVec = self.whiteNoiseGen(1.0, 2000, 20000, 0.2, FsOut=44100, Fn=1000)
         
 
 

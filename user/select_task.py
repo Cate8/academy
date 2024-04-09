@@ -28,20 +28,23 @@ def select_task(df, subject):
 
 
     if task == "S1":
-        if n_trials_last_session > 100:
-            task = "S2"
-        else:
-            task = "S1"
-
-
+        task = "S2"
     elif task == "S2":
-        task = "S3"
-
+        if n_trials_last_session > 250:
+            task = "S3"
     elif task == "S3":
-        task = "S4"
-        
+        if n_trials_last_session > 250:
+            task = "S4"
+        else:
+            task = "S3"
     elif task == "S4":
-        task = "S4"
+        if n_trials_last_session > 250:
+            task = "non_fixed_blocks"
+    elif task == "non_fixed_blocks":
+        if n_trials_last_session > 250:
+            task = "tailored_ITI"
+    elif task == "tailored_ITI":
+        task = "tailored_ITI"
 
 
     return task, stage, substage, wait_seconds, stim_dur_ds, stim_dur_dm, stim_dur_dl, choice
