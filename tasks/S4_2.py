@@ -73,7 +73,6 @@ class S4_2(Task):
         self.light_r_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
 
         self.outcome = ""
-        self.reward_drunk = 0
 
         # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
         # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block

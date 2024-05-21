@@ -35,6 +35,8 @@ class S1(Task):
         self.trials_with_same_side = 20
         self.trial_count = 0
         self.same_side_count = 0
+        self.duration_max = 45*60  # 45 min finished the task 
+        self.duration_min = 30*60  # 30 min door opens 
 
         # pumps
         self.valve_r_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
@@ -135,6 +137,11 @@ class S1(Task):
 
 
     def after_trial(self):
+        if self.side == "left":
+            self.reward_drunk += self.valve_l_reward
+        else:
+            self.reward_drunk += self.valve_r_reward
+
         # Relevant prints
         self.register_value('side', self.side)
         self.register_value('reward_drunk', self.reward_drunk)

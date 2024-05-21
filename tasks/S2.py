@@ -60,8 +60,6 @@ class S2(Task):
 
                 self.side = "left" if self.side == "right" else "right"
 
-
-
             self.trial_count += 1
 
             # Esegui altre azioni necessarie
@@ -123,6 +121,15 @@ class S2(Task):
             output_actions=[])
 
     def after_trial(self):
+
+        if self.current_trial_states['water_delivery'][0][0] > 0: # check that the animal went to that state
+            if self.side == "left":
+                self.reward_drunk += self.valve_l_reward
+            else:
+                self.reward_drunk += self.valve_r_reward
+    
+
+
         # Relevant prints
         self.register_value('side', self.side)
         self.register_value('reward_drunk', self.reward_drunk)

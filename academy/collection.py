@@ -39,7 +39,7 @@ class Collection:
     def read_from_csv(self, default_dict):
         self.items = []
         try:
-            print('reading', self.path)
+            #print('reading', self.path)
             my_df = pd.read_csv(self.path, sep=';')
             if default_dict is not None:
                 for name in default_dict.keys():

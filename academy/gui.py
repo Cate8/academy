@@ -311,7 +311,7 @@ class Gui(tk.Frame):
 
         else:  # setting task
 
-            print("SETTING TASK")
+            #print("SETTING TASK")
 
             # first row in 8 parts
             tk.Label(self, text='', anchor='w', width=margin).grid(row=row, column=0)
@@ -618,8 +618,8 @@ class Gui(tk.Frame):
                                                                              'control_weight',
                                                                              'basal_weight'])
 
-            print(self.subject_name)
-            print(self.subject)
+            #print(self.subject_name)
+            #print(self.subject)
 
             i = 0
             self.properties = []

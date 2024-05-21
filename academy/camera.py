@@ -149,7 +149,7 @@ class Video(Process):
         self.start()
 
     def run(self):
-        print("running ", self.port)
+        #print("running ", self.port)
         self.video = cv2.VideoCapture(self.port)
 
         if self.width is not None:
@@ -690,7 +690,7 @@ class Video(Process):
         return "".join([chr((v >> 8 * i) & 0xFF) for i in range(4)])
 
 try:
-    print("cam1-----")
+    #print("cam1-----")
     cam1 = Video(port=settings.CAMERA1_PORT,
                      cam_number=settings.CAM1_NUMBER,
                      name_video=settings.CAM1_NAME_VIDEO + '_' + time_utils.now_string_for_files() + '_' + settings.CAM1_NAME_VIDEO,
@@ -708,12 +708,12 @@ try:
                      doors2_zone=settings.CAM1_DOORS2_ZONE,
                      floor1_zone=None,
                      floor2_zone=None)
-    print("-----cam1")
+    #print("-----cam1")
 except:
     cam1 = FakeVideo()
 
 try:
-    print("cam2-----")
+    #print("cam2-----")
     cam2 = Video(port=settings.CAMERA2_PORT,
                      cam_number=settings.CAM2_NUMBER,
                      name_video=settings.CAM2_NAME_VIDEO + '_' + time_utils.now_string_for_files() + '_' + settings.CAM2_NAME_VIDEO,
@@ -731,12 +731,12 @@ try:
                      doors2_zone=settings.CAM2_DOORS2_ZONE,
                      floor1_zone=None,
                      floor2_zone=None)
-    print("-----cam2")
+    #print("-----cam2")
 except:
     cam2 = FakeVideo()
 
 try:
-    print("cam3-----")
+    #print("cam3-----")
     cam3 = Video(port=settings.CAMERA3_PORT,
                  cam_number=settings.CAM3_NUMBER,
                  name_video=settings.CAM3_NAME_VIDEO,
@@ -758,7 +758,7 @@ try:
                  floor1_zone=settings.CAM3_FLOOR1_ZONE,
                  floor2_zone=settings.CAM3_FLOOR2_ZONE,
                  tracking_position=settings.CAM3_TRACKING_POSITION)
-    print("-----cam3")
+    #print("-----cam3")
 
 except:
     cam3 = FakeVideo()

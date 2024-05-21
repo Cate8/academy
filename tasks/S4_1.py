@@ -73,7 +73,6 @@ class S4_1(Task):
         self.light_r_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
 
         self.outcome = ""
-        self.reward_drunk = 0
 
         # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
         # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
@@ -143,7 +142,7 @@ class S4_1(Task):
             # x = np.ndarray(shape= (N_x, 1), dtype = int)
             x = np.zeros([1, 3])
 
-            print(x)
+            #print(x)
 
             for i_block in range(N_blocks):
                 # we convert the array entry  block_duration_vec[i_block] into a scalar int or it will complain: "TypeError: only integer scalar arrays can be converted to a scalar index"
@@ -167,7 +166,7 @@ class S4_1(Task):
 
                 # remove the first row of x which contains zeros
             x = np.delete(x, 0, axis=0)
-            print("x: " + str(x))
+            #print("x: " + str(x))
             return x
         
                 # ITIs truncated exponential distribution 

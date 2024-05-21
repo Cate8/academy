@@ -75,7 +75,7 @@ class Ecohab(Process):
         while True:
 
             try:
-                print('STARTING ECOHAB')
+                #print('STARTING ECOHAB')
                 self.read_ecohab()
 
             except:

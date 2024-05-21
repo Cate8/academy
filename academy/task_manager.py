@@ -44,19 +44,11 @@ class TaskManager:
 
             self.df.to_csv(raw_path, index=None, header=True, sep=';')
 
-            print("hemos guardado el raw")
-
             self.new_df = self.transform_df()
-
-            print("hemos creado un nuevo df")
 
             water = self.new_df['reward_drunk'].iloc[-1]
 
-            print("hemos calculado reward_drunk")
-
             self.new_df.to_csv(clean_path, sep=';', header=True, index=False)
-
-            print("hemos guardado el nuevo csv")
 
             try:
                 self.df_all = pd.read_csv(subject_path, sep=';')

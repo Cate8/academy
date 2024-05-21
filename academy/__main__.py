@@ -251,7 +251,7 @@ def main_loop():
             if status == 'w':
                 try:
                     new_time = time_utils.now_seconds()
-                    print(new_time, " , ", tag)
+                    #print(new_time, " , ", tag)
                     weight.append((new_time, float(tag)))
                     weight = [value for value in weight if value[0] + 3 >= new_time]
                     list_weights = ','.join([str(item[1]) for item in weight])
@@ -638,7 +638,7 @@ def relaunch():
 
     eco.terminate()
 
-    print("eco terminated!!")
+    #print("eco terminated!!")
 
     time.sleep(1)
     cam1.put_state('inactive')
