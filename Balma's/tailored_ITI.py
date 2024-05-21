@@ -206,10 +206,10 @@ class tailored_ITI(Task):
                 #Generate the vector tailored ITIs values (from 1 to 30 sec, mean=5 sec)
         self.random_iti_values = custom_random_iti(self.trials_max, 1)
 
-        print("block_duration_vec: ", self.block_duration_vec)
-        print("probs_vector: ", self.probs_vector)
-        print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
-        print("Tailored ITI values: ", self.random_iti_values)
+        #print("block_duration_vec: ", self.block_duration_vec)
+        #print("probs_vector: ", self.probs_vector)
+        #print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
+        #print("Tailored ITI values: ", self.random_iti_values)
 
     def configure_gui(self):  # Variables that appear in the GUI
         self.gui_input = ['trials_max']

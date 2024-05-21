@@ -129,6 +129,7 @@ class Task(object):
 
             if self.my_bpod is None:
                 telegram_bot.alarm_bpod("error starting task")
+                utils.change_to_state = 5
 
             self.my_bpod.softcode_handler_function = softcode_handler
 

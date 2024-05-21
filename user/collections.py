@@ -26,3 +26,7 @@ water_calibration = {'port': 1,
 
 
 alarms = {'message': 'Creating new alarms.csv file'}
+
+
+temperatures = {'temperature': 0, 
+                'humidity': 0}

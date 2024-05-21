@@ -448,7 +448,7 @@ def animate_thread():
             #     pass
 
         if minute == 55:
-            if (hour == 11 or hour == 23) and temp_flag:
+            if temp_flag:
                 arduino.get_temperature()
                 temp_flag = False
 

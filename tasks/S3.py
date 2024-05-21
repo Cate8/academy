@@ -33,14 +33,15 @@ class S3(Task):
         self.substage = 0
         self.trials_max = 167544357423
         self.side = random.choice(["left", "right"])
-        self.trials_with_same_side = 20
+        self.trials_with_same_side = 30
         self.trial_count = 0
         self.same_side_count = 0
         output_actions=[
             (self.side,),
             (Bpod.OutputChannels.SoftCode, 20)
         ]
-
+        self.duration_max = 45*60  # 45 min finished the task 
+        self.duration_min = 30*60  # 30 min door opens 
 
         # pumps
         self.valve_r_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
@@ -58,7 +59,7 @@ class S3(Task):
         self.light_l_LED = (Bpod.OutputChannels.PWM2, self.led_intensity)
         self.light_r_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
 
-        print("hola")
+        #print("hola")
 
         
     def configure_gui(self):  # Variables that appear in the GUI
@@ -72,7 +73,7 @@ class S3(Task):
                 self.side = "left" if self.side == "right" else "right"
 
             self.trial_count += 1
-        print("hola1")
+        #print("hola1")
         if self.side == "left":
             self.correct_side = self.side
             self.wrong_side = "right"
@@ -81,7 +82,7 @@ class S3(Task):
             self.valvetime = self.valve_l_time
             self.valve_action = (Bpod.OutputChannels.Valve, 2)
             self.poke_side = Bpod.Events.Port2In
-            print("hola2")
+            #print("hola2")
         else:
             self.correct_side = self.side
             self.wrong_side = "left"
@@ -90,7 +91,7 @@ class S3(Task):
             self.valvetime = self.valve_r_time
             self.valve_action = (Bpod.OutputChannels.Valve, 5)
             self.poke_side = Bpod.Events.Port5In
-            print("hola3")
+            #print("hola3")
         ############ STATE MACHINE ################
 
         print('')
@@ -104,7 +105,7 @@ class S3(Task):
                 state_change_conditions={self.centre_poke: 'side_light'},
                 output_actions=[self.centre_light_LED]
             )
-            print("hola4")
+            #print("hola4")
             self.sma.add_state(
                 state_name='side_light',
                 state_timer=10,
@@ -112,22 +113,23 @@ class S3(Task):
                                         self.wrong_poke_side: 'wrong_side'},
                 output_actions=[self.light_l_LED, self.light_r_LED, (Bpod.OutputChannels.SoftCode, 20)] #softcode 20 to close door2
             ) 
-            print("hola5")
+            #print("hola5")
         else:
             self.sma.add_state(
                 state_name='center_light',
-                state_timer=300,
+                state_timer=10,
                 state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.centre_poke: 'side_light'},
                 output_actions=[self.centre_light_LED]
             )
 
             self.sma.add_state(
                 state_name='side_light',
-                state_timer=300,
+                state_timer=10,
                 state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'water_delivery',
                                         self.wrong_poke_side: 'wrong_side'},
-                output_actions=[self.side]
-            )
+                output_actions=[self.light_l_LED, self.light_r_LED] 
+            ) 
+            #print("hola5")
 
         self.sma.add_state(
             state_name='water_delivery',
@@ -138,7 +140,7 @@ class S3(Task):
 
         self.sma.add_state(
             state_name='wrong_side',
-            state_timer=2,
+            state_timer=0,
             state_change_conditions={Bpod.Events.Tup: 'timeout'},
             output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
         )
@@ -152,7 +154,7 @@ class S3(Task):
 
         self.sma.add_state(
             state_name='drink_delay',
-            state_timer=1,
+            state_timer=2,
             state_change_conditions={Bpod.Events.Tup: 'exit'},
             output_actions=[]
         )

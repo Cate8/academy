@@ -68,6 +68,7 @@ class S1(Task):
 
         self.trial_count += 1
 
+
         if self.side == "left":
             self.valvetime = self.valve_l_time
             self.valve_action = (Bpod.OutputChannels.Valve, 2)
@@ -81,41 +82,62 @@ class S1(Task):
             self.poke_side= Bpod.Events.Port5In     
 
 
-
-        ############ STATE MACHINE ################
+        #### CREATING STATE MACHINE, ADDING STATES, SENDING AND RUNNING ####
+        
         print('')
         print('Trial: ' + str(self.current_trial))
         print('Reward side: ' + str(self.side))
 
 
+        # Only the first trial
+        if self.current_trial == 0:
+            self.sma.add_state(
+                state_name='water_light',
+                state_timer=self.valvetime,
+                state_change_conditions={Bpod.Events.Tup: 'waiting_light'},
+                output_actions=[self.light_LED, self.valve_action] 
+                )
 
+            self.sma.add_state(
+                state_name='waiting_light',
+                state_timer=0,
+                state_change_conditions={self.poke_side: 'drink_delay'},
+                output_actions=[self.light_LED] 
+                )
+            self.sma.add_state(
+                state_name='drink_delay',
+                state_timer=2,
+                state_change_conditions={Bpod.Events.Tup: 'exit'},
+                output_actions=[(Bpod.OutputChannels.SoftCode, 20)]) #softcode 20 to close door2
+            
+        
+        else:    
+            self.sma.add_state(
+                state_name='water_light',
+                state_timer=self.valvetime,
+                state_change_conditions={Bpod.Events.Tup: 'waiting_light'},
+                output_actions=[self.light_LED, self.valve_action]
+                )
 
-        self.sma.add_state(
-            state_name='water_light',
-            state_timer=self.valvetime,
-            state_change_conditions={Bpod.Events.Tup: 'waiting_light'},
-            output_actions=[self.light_LED, self.valve_action]
-            )
+            self.sma.add_state(
+                state_name='waiting_light',
+                state_timer=300,
+                state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.poke_side: 'drink_delay'},
+                output_actions=[self.light_LED]
+                )
 
-        self.sma.add_state(
-            state_name='waiting_light',
-            state_timer=300,
-            state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.poke_side: 'drink_delay'},
-            output_actions=[self.light_LED]
-            )
-
-        self.sma.add_state(
-            state_name='drink_delay',
-            state_timer=2,
-            state_change_conditions={Bpod.Events.Tup: 'exit'},
-            output_actions=[])
+            self.sma.add_state(
+                state_name='drink_delay',
+                state_timer=2,
+                state_change_conditions={Bpod.Events.Tup: 'exit'},
+                output_actions=[])
 
 
 
     def after_trial(self):
         # Relevant prints
         self.register_value('side', self.side)
-
+        self.register_value('reward_drunk', self.reward_drunk)
 
 
 

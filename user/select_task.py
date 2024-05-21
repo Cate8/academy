@@ -9,6 +9,7 @@ from user import settings
 
 def select_task(df, subject):
 
+
     # variables by default
     task = subject.task
     wait_seconds = 3600 * settings.TIME_TO_ENTER  # wait a minimum of x hours before allowed to start the new session)
@@ -25,33 +26,60 @@ def select_task(df, subject):
     df_last_session = df.loc[df['session'] == last_session].copy()         
     n_trials_last_session = df_last_session.trial.max()  # number of trials in current session
 
+    df_last3 = df.loc[df['session'] > last_session - 3].copy()
+    last3_total_trials = df_last3.groupby('session')['trial'].max()  #list of the total trials performed in the last 5 sessions
+    sessions_above_250_trials = sum(1 for value in last3_total_trials if value > 250)
+
 
 
     if task == "S1":
         task = "S2"
+
     elif task == "S2":
         if n_trials_last_session > 250:
             task = "S3"
+        else:
+            task ="S2"
+            
     elif task == "S3":
         if n_trials_last_session > 250:
-            task = "S4"
+                task = "S4_1"
         else:
             task = "S3"
-    elif task == "S4":
-        if n_trials_last_session > 250:
-            task = "non_fixed_blocks"
-    elif task == "non_fixed_blocks":
-        if n_trials_last_session > 250:
-            task = "tailored_ITI"
-    elif task == "tailored_ITI":
-        task = "tailored_ITI"
+    
+    elif task == "S4_1":
+        if sessions_above_250_trials >=3:
+           task = "S4_2"
+        else:
+            task = "S4_1"
+    
+    elif task == "S4_2":
+        if sessions_above_250_trials >=3:
+           task = "S4_3"
+        else:
+            task == "S4_2"
+
+    elif task == "S4_3":
+        if sessions_above_250_trials >=3:
+           task = "S4_4"
+        else:
+            task == "S4_3"
+    
+    elif task == "S4_4":
+        if sessions_above_250_trials >=3:
+           task = "S4_5"
+        else:
+            task == "S4_4"
+    
+    elif task == "S4_5":
+        task = "S4_5"
 
 
     return task, stage, substage, wait_seconds, stim_dur_ds, stim_dur_dm, stim_dur_dl, choice
 
 
 
-wait_seconds = 3600 * settings.TIME_TO_ENTER  # wait a minimum of x hours before allowed to start the new session)
+wait_seconds = 3600*settings.TIME_TO_ENTER  # wait a minimum of x hours before allowed to start the new session)
 
 
 

@@ -32,7 +32,7 @@ from user import settings
 
 def main():
 
-    print(eco.name)
+    #print(eco.name)
 
     gui.reload()
     try:
