@@ -26,47 +26,70 @@ def select_task(df, subject):
     df_last_session = df.loc[df['session'] == last_session].copy()         
     n_trials_last_session = df_last_session.trial.max()  # number of trials in current session
 
-    df_last3 = df.loc[df['session'] > last_session - 3].copy()
-    last3_total_trials = df_last3.groupby('session')['trial'].max()  #list of the total trials performed in the last 5 sessions
-    sessions_above_250_trials = sum(1 for value in last3_total_trials if value > 250)
+    #df_last3 = df.loc[df['session'] > last_session - 3].copy()
+    #last3_total_trials = df_last3.groupby('session')['trial'].max()  #list of the total trials performed in the last 5 sessions
+    #sessions_above_250_trials = sum(1 for value in last3_total_trials if value > 250)
 
+    sessions_in_S2 = df.loc[df['task'] == 'S2'].copy()
+    sessions_in_S2_total_trials = sessions_in_S2.groupby('session')['trial'].max() 
+    sessions_in_S2_above_250_trials = sum(1 for value in sessions_in_S2_total_trials if value >  170)
+
+    sessions_in_S3 = df.loc[df['task'] == 'S3'].copy()
+    sessions_in_S3_total_trials = sessions_in_S3.groupby('session')['trial'].max() 
+    sessions_in_S3_above_250_trials = sum(1 for value in sessions_in_S3_total_trials if value > 170)
+
+    sessions_in_S4_1 = df.loc[df['task'] == 'S4_1'].copy()
+    sessions_in_S4_1_total_trials = sessions_in_S4_1.groupby('session')['trial'].max() 
+    sessions_in_S4_1_above_250_trials = sum(1 for value in sessions_in_S4_1_total_trials if value >  170)
+    
+    sessions_in_S4_2 = df.loc[df['task'] == 'S4_2'].copy()
+    sessions_in_S4_2_total_trials = sessions_in_S4_2.groupby('session')['trial'].max() 
+    sessions_in_S4_2_above_250_trials = sum(1 for value in sessions_in_S4_2_total_trials if value >  170)
+
+    sessions_in_S4_3 = df.loc[df['task'] == 'S4_3'].copy()
+    sessions_in_S4_3_total_trials = sessions_in_S4_3.groupby('session')['trial'].max() 
+    sessions_in_S4_3_above_250_trials = sum(1 for value in sessions_in_S4_3_total_trials if value >  170)
+
+    sessions_in_S4_4 = df.loc[df['task'] == 'S4_4'].copy()
+    sessions_in_S4_4_total_trials = sessions_in_S4_4.groupby('session')['trial'].max() 
+    sessions_in_S4_4_above_250_trials = sum(1 for value in sessions_in_S4_4_total_trials if value >  170)
 
 
     if task == "S1":
         task = "S2"
 
     elif task == "S2":
-        if n_trials_last_session > 250:
+        if sessions_in_S2_above_250_trials >= 1:
             task = "S3"
         else:
             task ="S2"
             
     elif task == "S3":
-        if n_trials_last_session > 250:
+        if sessions_in_S3_above_250_trials >= 1:
                 task = "S4_1"
         else:
             task = "S3"
     
     elif task == "S4_1":
-        if sessions_above_250_trials >=3:
+        if sessions_in_S4_1_above_250_trials >=4:
            task = "S4_2"
         else:
             task = "S4_1"
     
     elif task == "S4_2":
-        if sessions_above_250_trials >=3:
+        if sessions_in_S4_2_above_250_trials >=4:
            task = "S4_3"
         else:
             task == "S4_2"
 
     elif task == "S4_3":
-        if sessions_above_250_trials >=3:
+        if sessions_in_S4_3_above_250_trials >=4:
            task = "S4_4"
         else:
             task == "S4_3"
     
     elif task == "S4_4":
-        if sessions_above_250_trials >=3:
+        if sessions_in_S4_4_above_250_trials >=4:
            task = "S4_5"
         else:
             task == "S4_4"

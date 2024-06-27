@@ -24,7 +24,7 @@ class WaterCalibrationRight(Task):
 
         self.port = [i for i, x in enumerate(self.ports) if x][1] + 1
 
-        self.water = 5
+        self.water = 3
         self.pulse_duration = 0.005
 
         item = self.collection.read_last_value('port', self.port)
