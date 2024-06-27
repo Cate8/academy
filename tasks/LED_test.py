@@ -21,10 +21,16 @@ class LED_test(Task):
         self.trials_max = 10
 
         # pumps
-        self.valve_r_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
-        self.valve_r_reward = utils.water_calibration.read_last_value('port', 2).water
-        self.valve_l_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
-        self.valve_l_reward = utils.water_calibration.read_last_value('port', 5).water
+        if settings.BOX_NAME == 12:
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 1).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 7).water
+        elif settings.BOX_NAME == 9:
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 2).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 5).water
 
         self.led_intensity = 255
 
@@ -32,6 +38,38 @@ class LED_test(Task):
         self.gui_input = ['trials_max']
 
     def main_loop(self):
+        if settings.BOX_NAME == 12:
+            portLeftIn = Bpod.Events.Port1In
+            portCenterIn = Bpod.Events.Port4In
+            portRightIn = Bpod.Events.Port7In
+            portLeftOut = Bpod.Events.Port1Out
+            portCenterOut = Bpod.Events.Port4Out
+            portRightOut = Bpod.Events.Port7Out
+            ledLeft = (Bpod.OutputChannels.PWM1, self.led_intensity)
+            ledCenter = (Bpod.OutputChannels.PWM4, self.led_intensity)
+            ledRight = (Bpod.OutputChannels.PWM7, self.led_intensity)
+            valveLeft = (Bpod.OutputChannels.Valve, 1)
+            valveRight = (Bpod.OutputChannels.Valve, 7)
+
+
+        elif settings.BOX_NAME == 9:
+            portLeftIn = Bpod.Events.Port2In
+            portCenterIn = Bpod.Events.Port3In
+            portRightIn = Bpod.Events.Port5In
+
+            portLeftOut = Bpod.Events.Port2Out
+            portCenterOut = Bpod.Events.Port3Out
+            portRightOut = Bpod.Events.Port5Out
+
+            ledLeft = (Bpod.OutputChannels.PWM2, self.led_intensity)
+            ledCenter = (Bpod.OutputChannels.PWM3, self.led_intensity)
+            ledRight = (Bpod.OutputChannels.PWM5, self.led_intensity)
+
+            valveLeft = (Bpod.OutputChannels.Valve, 2)
+            valveRight = (Bpod.OutputChannels.Valve, 5)
+    
+
+
         portLeftIn = Bpod.Events.Port2In
         portCenterIn = Bpod.Events.Port3In
         portRightIn = Bpod.Events.Port5In
