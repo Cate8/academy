@@ -39,10 +39,16 @@ class S2(Task):
         self.duration_min = 30*60  # 30 min door opens 
 
         # pumps
-        self.valve_r_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
-        self.valve_r_reward = utils.water_calibration.read_last_value('port', 2).water
-        self.valve_l_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
-        self.valve_l_reward = utils.water_calibration.read_last_value('port', 5).water
+        if settings.BOX_NAME == 9:
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 2).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 5).water
+        elif settings.BOX_NAME == 12:
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 1).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 7).water
      
         # counters
         self.reward_drunk = 0
@@ -64,17 +70,33 @@ class S2(Task):
 
             # Esegui altre azioni necessarie
 
-        if self.side == "left":
-            self.valvetime = self.valve_l_time
-            self.valve_action = (Bpod.OutputChannels.Valve, 2)
-            self.light_LED = (Bpod.OutputChannels.PWM2, self.led_intensity)
-            self.poke_side= Bpod.Events.Port2In
+        if settings.BOX_NAME == 9:
+            if self.side == "left":
+                    self.valvetime = self.valve_l_time
+                    self.valve_action = (Bpod.OutputChannels.Valve, 2)
+                    self.light_LED = (Bpod.OutputChannels.PWM2, self.led_intensity)
+                    self.poke_side= Bpod.Events.Port2In
 
-        else:
-            self.valvetime = self.valve_r_time
-            self.valve_action = (Bpod.OutputChannels.Valve, 5)
-            self.light_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
-            self.poke_side= Bpod.Events.Port5In     
+            else:
+                    self.valvetime = self.valve_r_time
+                    self.valve_action = (Bpod.OutputChannels.Valve, 5)
+                    self.light_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
+                    self.poke_side= Bpod.Events.Port5In     
+
+        elif settings.BOX_NAME == 12:
+            if self.side == "left":
+                    self.valvetime = self.valve_l_time
+                    self.valve_action = (Bpod.OutputChannels.Valve, 1)
+                    self.light_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
+                    self.poke_side= Bpod.Events.Port1In
+
+            else:
+                    self.valvetime = self.valve_r_time
+                    self.valve_action = (Bpod.OutputChannels.Valve, 7)
+                    self.light_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+                    self.poke_side= Bpod.Events.Port7In     
+
+ 
 
         #### CREATING STATE MACHINE, ADDING STATES, SENDING AND RUNNING ####
         

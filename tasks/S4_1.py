@@ -55,22 +55,34 @@ class S4_1(Task):
         self.prob_Left_Right_blocks = 'balanced'
         # self.prob_Left_Right_blocks = 'indep'
 
-        # pumps
-        self.valve_r_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
-        self.valve_r_reward = utils.water_calibration.read_last_value('port', 2).water
-        self.valve_l_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
-        self.valve_l_reward = utils.water_calibration.read_last_value('port', 5).water
+         # pumps
+        if settings.BOX_NAME == 9:
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 2).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 5).water
+        elif settings.BOX_NAME == 12:
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 1).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 7).water
 
         # counters
         self.reward_drunk = 0
         self.led_intensity = 255
 
         # centre_light_LED
-        self.centre_light_LED = (Bpod.OutputChannels.PWM3, self.led_intensity)
-        self.centre_poke = (Bpod.Events.Port3In)
-
-        self.light_l_LED = (Bpod.OutputChannels.PWM2, self.led_intensity)
-        self.light_r_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
+        if settings.BOX_NAME == 9:
+            self.centre_light_LED = (Bpod.OutputChannels.PWM3, self.led_intensity)
+            self.centre_poke = (Bpod.Events.Port3In)
+            self.light_l_LED = (Bpod.OutputChannels.PWM2, self.led_intensity)
+            self.light_r_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
+        
+        elif settings.BOX_NAME == 12:
+            self.centre_light_LED = (Bpod.OutputChannels.PWM4, self.led_intensity)
+            self.centre_poke = (Bpod.Events.Port4In)
+            self.light_l_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
+            self.light_r_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
 
         self.outcome = ""
 
@@ -229,22 +241,42 @@ class S4_1(Task):
 
         # input("escribe algo: ")
 
-        if self.reward_side_number == 0:  # 0 per lato sinistro
-            self.correct_side = "left"
-            self.wrong_side = "right"
-            self.correct_poke_side = Bpod.Events.Port2In
-            self.wrong_poke_side = Bpod.Events.Port5In
-            self.valvetime = self.valve_l_time
-            self.valve_action = (Bpod.OutputChannels.Valve, 2)
-            self.poke_side = Bpod.Events.Port2In
-        else:  # 1 per lato destro
-            self.correct_side = "right"
-            self.wrong_side = "left"
-            self.correct_poke_side = Bpod.Events.Port5In
-            self.wrong_poke_side = Bpod.Events.Port2In
-            self.valvetime = self.valve_r_time
-            self.valve_action = (Bpod.OutputChannels.Valve, 5)
-            self.poke_side = Bpod.Events.Port5In
+        if settings.BOX_NAME == 9:
+            if self.reward_side_number == 0:  # 0 per lato sinistro
+                self.correct_side = "left"
+                self.wrong_side = "right"
+                self.correct_poke_side = Bpod.Events.Port2In
+                self.wrong_poke_side = Bpod.Events.Port5In
+                self.valvetime = self.valve_l_time
+                self.valve_action = (Bpod.OutputChannels.Valve, 2)
+                self.poke_side = Bpod.Events.Port2In
+            else:  # 1 per lato destro
+                self.correct_side = "right"
+                self.wrong_side = "left"
+                self.correct_poke_side = Bpod.Events.Port5In
+                self.wrong_poke_side = Bpod.Events.Port2In
+                self.valvetime = self.valve_r_time
+                self.valve_action = (Bpod.OutputChannels.Valve, 5)
+                self.poke_side = Bpod.Events.Port5In
+        
+        elif settings.BOX_NAME == 12:
+            if self.reward_side_number == 0:  # 0 per lato sinistro
+                self.correct_side = "left"
+                self.wrong_side = "right"
+                self.correct_poke_side = Bpod.Events.Port1In
+                self.wrong_poke_side = Bpod.Events.Port7In
+                self.valvetime = self.valve_l_time
+                self.valve_action = (Bpod.OutputChannels.Valve, 1)
+                self.poke_side = Bpod.Events.Port1In
+            else:  # 1 per lato destro
+                self.correct_side = "right"
+                self.wrong_side = "left"
+                self.correct_poke_side = Bpod.Events.Port7In
+                self.wrong_poke_side = Bpod.Events.Port1In
+                self.valvetime = self.valve_r_time
+                self.valve_action = (Bpod.OutputChannels.Valve, 7)
+                self.poke_side = Bpod.Events.Port7In
+
 
         ############ STATE MACHINE ################
 
