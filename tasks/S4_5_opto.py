@@ -60,6 +60,8 @@ class S4_5_opto(Task):
         # This can cause that in some sessions, the overall prob_R over the entire session is larger than 0.5
         self.prob_Left_Right_blocks = 'balanced'
         # self.prob_Left_Right_blocks = 'indep'
+        self.opto_onset = 6 #seconds, its the time that the animals need to drink + the opto duration (the time in which the light will be ON)
+
 
         # OPTO PARAMETERS
 
@@ -378,67 +380,72 @@ class S4_5_opto(Task):
             )
 
 
-            if self.opto_bool == 0:
-                
+            if self.opto_bool == 1 and self.random_iti > self.opto_onset :
+
                 self.sma.add_state(
                     state_name='wrong_side',
                     state_timer=0.5,
-                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                    state_change_conditions={Bpod.Events.Tup: 'wait_opto'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
                 )
-
 
                 self.sma.add_state(
                     state_name='water_delivery',
                     state_timer=self.valvetime,
-                    state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'drink_delay'},
+                    state_change_conditions={Bpod.Events.Tup: 'wait_opto', self.correct_poke_side: 'wait_opto'},
                     output_actions=[self.valve_action]
                 )    
-                
-            else:
 
+                self.sma.add_state(
+                    state_name='wait_opto',
+                    state_timer= 5,
+                    state_change_conditions={Bpod.Events.Tup: 'light_on', self.correct_poke_side: 'light_on'},
+                    output_actions=[]
+                )    
+
+                self.sma.add_state(
+                    state_name='light_on',
+                    state_timer= 1,
+                    state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_off'},
+                    output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
+                )    
+
+                self.sma.add_state(
+                    state_name='light_off',
+                    state_timer=0.5,
+                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                    output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
+                )
+            
+                self.sma.add_state(
+                    state_name='drink_delay',
+                    state_timer=self.random_iti - self.opto_onset,
+                    state_change_conditions={Bpod.Events.Tup: 'exit'},
+                    output_actions=[]
+                )
+ 
+            else:
                     self.sma.add_state(
                         state_name='wrong_side',
                         state_timer=0.5,
-                        state_change_conditions={Bpod.Events.Tup: 'wait_opto'},
+                        state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
                         output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
                     )
 
                     self.sma.add_state(
                         state_name='water_delivery',
                         state_timer=self.valvetime,
-                        state_change_conditions={Bpod.Events.Tup: 'wait_opto', self.correct_poke_side: 'wait_opto'},
+                        state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'drink_delay'},
                         output_actions=[self.valve_action]
                     )    
-
+                    
                     self.sma.add_state(
-                        state_name='wait_opto',
-                        state_timer= 5,
-                        state_change_conditions={Bpod.Events.Tup: 'light_on', self.correct_poke_side: 'light_on'},
-                        output_actions=[]
-                    )    
-
-                    self.sma.add_state(
-                        state_name='light_on',
-                        state_timer= 1,
-                        state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_off'},
-                        output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
-                    )    
-
-                    self.sma.add_state(
-                        state_name='light_off',
-                        state_timer=0.5,
-                        state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
-                        output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
-                    )
-                
-            self.sma.add_state(
-                    state_name='drink_delay',
-                    state_timer=self.random_iti,
-                    state_change_conditions={Bpod.Events.Tup: 'exit'},
-                    output_actions=[]
-                )
-    
+                            state_name='drink_delay',
+                            state_timer=self.random_iti,
+                            state_change_conditions={Bpod.Events.Tup: 'exit'},
+                            output_actions=[]
+                        )
+            
     def after_trial(self):
 
         if self.current_trial_states['water_delivery'][0][0] > 0: # check that the animal went to that state
