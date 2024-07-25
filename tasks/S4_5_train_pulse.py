@@ -30,7 +30,7 @@ else:
     from academy.pulse_pal import FakePulsePal as PulsePal
 
 
-class S4_5_opto(Task):
+class S4_5_train_pulse(Task):
 
     def __init__(self):
         super().__init__()
@@ -248,9 +248,9 @@ class S4_5_opto(Task):
         
         # OPTO Trial:
         # Genera un numero casuale tra 0 e 1
-        random_number = random.random()
+        #random_number = random.random()
 
-        #random_number = 1
+        random_number = 0.15
 
         # Decide il valore di opto_bool in base al numero casuale generato
         if random_number <= 0.25:  # 25% di possibilità
@@ -263,15 +263,14 @@ class S4_5_opto(Task):
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
         self.random_iti = self.random_iti_values[self.current_trial]
 
-        # OPTO PULSES: luz continua
+        # OPTO PULSES: train pulses
     
-
-        pulse1 = self.pulse_pal.create_square_pulse(1, 0, 0.2, 5)
+        # tren de pulsos
+        pulse1 = self.pulse_pal.create_square_pulsetrain(self.max_dur_light, 0.005, 0.045, 5)
         self.pulse_pal.assign_pulse(pulse1, 1)
 
-        #pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5)
-        # self.pulse_pal.assign_pulse(pulse2, 2)
-        
+        #pulse2 = self.pulse_pal.create_square_pulse(0, 0, 0, 5)
+        #self.pulse_pal.assign_pulse(pulse2, 2)
 
 
         print("current_trial: ", self.current_trial)
