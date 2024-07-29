@@ -45,7 +45,7 @@ class S4_5_train_pulse(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        self.prob_right_values = [0.9,0.8,0.7,0.6,0.5]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        self.prob_right_values = [0.9,0.8,0.7,0.6]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
         
         self.N_trials = 1000
         self.mean_x = 30
@@ -201,7 +201,9 @@ class S4_5_train_pulse(Task):
             return x
         
                 # ITIs truncated exponential distribution 
-        lambda_param = 0.1  # # TO CHANGE this is the mean of the distribution, (1/0.1 so 10 seconds)
+        #lambda_param = 0.1  # # TO CHANGE this is the mean of the distribution, (1/0.1 so 10 seconds)
+        lambda_param = 0.2  # # TO CHANGE this is the mean of the distribution, (1/0.2 so 5 seconds)
+
 
         # funtion to generate the truncated exponential distribution for the ITIs
         def generate_trial_values(lambda_param, max_value, num_values):
@@ -216,7 +218,7 @@ class S4_5_train_pulse(Task):
 
         # function to obtain the values
         def custom_random_iti(num_trials, num_values_per_trial):
-            lambda_parameter = 0.1  # TO CHANGE lambda for exp distribution
+            lambda_parameter = 0.2  # TO CHANGE lambda for exp distribution
             max_value = 30  # max value
             all_values = []
             for _ in range(num_trials):
@@ -248,9 +250,9 @@ class S4_5_train_pulse(Task):
         
         # OPTO Trial:
         # Genera un numero casuale tra 0 e 1
-        #random_number = random.random()
+        random_number = random.random()
 
-        random_number = 0.15
+        #random_number = 0.15
 
         # Decide il valore di opto_bool in base al numero casuale generato
         if random_number <= 0.25:  # 25% di possibilità

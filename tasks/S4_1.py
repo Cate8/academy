@@ -197,7 +197,7 @@ class S4_1(Task):
 
         # function to obtain the values
         def custom_random_iti(num_trials, num_values_per_trial):
-            lambda_parameter = 0.5  # lambda for exp distribution
+            lambda_parameter = 0.5  # this is the mean of the distribution, (1/5 so 2 seconds)
             max_value = 30  # max value
             all_values = []
             for _ in range(num_trials):
