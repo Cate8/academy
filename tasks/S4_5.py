@@ -40,14 +40,14 @@ class S4_5(Task):
         self.trials_max = 16754
         self.N_blocks = 100
         #self.prob_right_values = [0.9,0.8,0.7,0.6,0.5]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
-        self.prob_right_values = [0.9,0.8,0.7,0.6] 
+        self.prob_right_values = [0.9,0.8] 
 
 
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        self.block_type = "exp"
-        #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
+        #self.block_type = "exp"
+        self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
         self.prob_block_type = 'rdm_values'
         # self.prob_block_type ='permutation_prob_list'
@@ -98,7 +98,7 @@ class S4_5(Task):
                 x[0:] = mean_x
             elif x_type == "exp":
                 x = np.random.geometric(1 / mean_x, (N_blocks, 1))
-                x = np.clip(x, 10, 50)  # TO CHANGE amplitude of the blocks
+                x = np.clip(x, 25, 50)  # TO CHANGE amplitude of the blocks
             else:
                 Warning('Blocked type not supported')
             return x.flatten()

@@ -45,13 +45,13 @@ class S4_5_train_pulse(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        self.prob_right_values = [0.9,0.8,0.7,0.6]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        self.prob_right_values = [0.9,0.8]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
         
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        self.block_type = "exp"
-        #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
+        #self.block_type = "exp"
+        self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
         self.prob_block_type = 'rdm_values'
         # self.prob_block_type ='permutation_prob_list'
@@ -65,7 +65,7 @@ class S4_5_train_pulse(Task):
 
         # OPTO PARAMETERS
 
-        self.trials_max = 100
+   
         self.max_dur_light = 2
         self.pulse_pal = PulsePal(address='/dev/pulsepal')
         
@@ -255,7 +255,7 @@ class S4_5_train_pulse(Task):
         #random_number = 0.15
 
         # Decide il valore di opto_bool in base al numero casuale generato
-        if random_number <= 0.25:  # 25% di possibilità
+        if random_number <= 0.75:  # 25% di possibilità
             self.opto_bool = 1
         else:
             self.opto_bool = 0

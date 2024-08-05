@@ -45,13 +45,13 @@ class S4_5_single_pulse(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        self.prob_right_values = [0.9,0.8,0.7,0.6]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        self.prob_right_values = [0.9,0.8]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
         
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        self.block_type = "exp"
-        #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
+        #self.block_type = "exp"
+        self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
         self.prob_block_type = 'rdm_values'
         # self.prob_block_type ='permutation_prob_list'
@@ -65,7 +65,6 @@ class S4_5_single_pulse(Task):
 
         # OPTO PARAMETERS
 
-        self.trials_max = 100
         self.max_dur_light = 2
         self.pulse_pal = PulsePal(address='/dev/pulsepal')
         
@@ -255,7 +254,7 @@ class S4_5_single_pulse(Task):
         #random_number = 0.15
 
         # Decide il valore di opto_bool in base al numero casuale generato
-        if random_number <= 0.25:  # 25% di possibilità
+        if random_number <= 0.75:  # 25% di possibilità
             self.opto_bool = 1
         else:
             self.opto_bool = 0
@@ -266,15 +265,13 @@ class S4_5_single_pulse(Task):
         self.random_iti = self.random_iti_values[self.current_trial]
 
         # OPTO PULSES: luz continua
-    
 
         pulse1 = self.pulse_pal.create_square_pulse(1, 0, 0.2, 5)
         self.pulse_pal.assign_pulse(pulse1, 1)
 
         #pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5)
         # self.pulse_pal.assign_pulse(pulse2, 2)
-        
-
+    
 
         print("current_trial: ", self.current_trial)
         print("block_identity: ", self.block_identity)
@@ -348,7 +345,7 @@ class S4_5_single_pulse(Task):
                 state_name='wrong_side',
                 state_timer=0.5,
                 state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
-                output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
+                output_actions=[(Bpod.OutputChannels.SoftCode, 1)] #sound on 
             )
 
             self.sma.add_state(
@@ -394,21 +391,21 @@ class S4_5_single_pulse(Task):
                 self.sma.add_state(
                     state_name='water_delivery',
                     state_timer=self.valvetime,
-                    state_change_conditions={Bpod.Events.Tup: 'wait_opto', self.correct_poke_side: 'wait_opto'},
+                    state_change_conditions={Bpod.Events.Tup: 'wait_opto'},
                     output_actions=[self.valve_action]
                 )    
 
                 self.sma.add_state(
                     state_name='wait_opto',
                     state_timer= 5,
-                    state_change_conditions={Bpod.Events.Tup: 'light_on', self.correct_poke_side: 'light_on'},
+                    state_change_conditions={Bpod.Events.Tup: 'light_on'},
                     output_actions=[]
                 )    
 
                 self.sma.add_state(
                     state_name='light_on',
                     state_timer= 1,
-                    state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_off'},
+                    state_change_conditions={Bpod.Events.Tup: 'light_off'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
                 )    
 
