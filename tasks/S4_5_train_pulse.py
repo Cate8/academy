@@ -252,7 +252,7 @@ class S4_5_train_pulse(Task):
         # Genera un numero casuale tra 0 e 1
         random_number = random.random()
 
-        #random_number = 0.15
+        #random_number = 0.74
 
         # Decide il valore di opto_bool in base al numero casuale generato
         if random_number <= 0.75:  # 25% di possibilità

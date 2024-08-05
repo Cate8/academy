@@ -251,7 +251,7 @@ class S4_5_single_pulse(Task):
         # Genera un numero casuale tra 0 e 1
         random_number = random.random()
 
-        #random_number = 0.15
+        #random_number = 0.74
 
         # Decide il valore di opto_bool in base al numero casuale generato
         if random_number <= 0.75:  # 25% di possibilità
@@ -405,14 +405,14 @@ class S4_5_single_pulse(Task):
                 self.sma.add_state(
                     state_name='light_on',
                     state_timer= 1,
-                    state_change_conditions={Bpod.Events.Tup: 'light_off'},
+                    state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_on'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
                 )    
 
                 self.sma.add_state(
                     state_name='light_off',
                     state_timer=0.5,
-                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                    state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'light_off'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
                 )
             
