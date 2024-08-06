@@ -106,15 +106,27 @@ class S4_5_single_pulse(Task):
 
         # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
         # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
+        # def generate_block_duration_vec(x_type, mean_x, N_blocks):
+        #     # if (N_blocks % 2 == 0):
+        #     # Warning('The number of blocks must be an even number')
+        #     x = np.ndarray(shape=(N_blocks, 1), dtype=int)
+        #     if x_type == "fixed":
+        #         x[0:] = mean_x
+        #     elif x_type == "exp":
+        #         x = np.random.geometric(1 / mean_x, (N_blocks, 1))
+        #         x = np.clip(x, 10, 50)  # TO CHANGE amplitude of the blocks
+        #     else:
+        #         Warning('Blocked type not supported')
+        #     return x.flatten()
+
+                # RANDOM UNIFORM DISTRIBUTION
         def generate_block_duration_vec(x_type, mean_x, N_blocks):
-            # if (N_blocks % 2 == 0):
-            # Warning('The number of blocks must be an even number')
             x = np.ndarray(shape=(N_blocks, 1), dtype=int)
             if x_type == "fixed":
                 x[0:] = mean_x
             elif x_type == "exp":
-                x = np.random.geometric(1 / mean_x, (N_blocks, 1))
-                x = np.clip(x, 10, 50)  # TO CHANGE amplitude of the blocks
+                mean_x = None 
+                x = np.random.uniform(20, 55, (N_blocks, 1)).astype(int)
             else:
                 Warning('Blocked type not supported')
             return x.flatten()
@@ -237,7 +249,7 @@ class S4_5_single_pulse(Task):
                 #Generate the vector tailored ITIs values (from 1 to 30 sec, mean=5 sec)
         self.random_iti_values = custom_random_iti(self.trials_max, 1)
 
-        #print("block_duration_vec: ", self.block_duration_vec)
+        print("block_duration_vec: ", self.block_duration_vec)
         #print("probs_vector: ", self.probs_vector)
         #print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
         #print("Tailored ITI values: ", self.random_iti_values)
