@@ -45,13 +45,13 @@ class S4_5_single_pulse(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        self.prob_right_values = [0.9,0.8]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        self.prob_right_values = [0.9,0.8,0.6]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
         
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        #self.block_type = "exp"
-        self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
+        self.block_type = "exp"
+        #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
         self.prob_block_type = 'rdm_values'
         # self.prob_block_type ='permutation_prob_list'
@@ -65,13 +65,22 @@ class S4_5_single_pulse(Task):
 
         # OPTO PARAMETERS
 
-        self.max_dur_light = 2
+        self.max_dur_light = 1
         self.pulse_pal = PulsePal(address='/dev/pulsepal')
         
         self.opto_type = 6  # 0 off, 6 for inhibition, 7 for activation
         self.frequency_light = 20  # must be > 0
         self.pulse_dur_on = 0.0125  # self.pulse_dur_on must be < than 1 / self.frequency_light
 
+
+        self.mean_ITI = 5
+        self.fraction_light_on_trials = 0.25
+        self.prob_ITI_GT_six = np.exp(-6/self.mean_ITI)
+        
+        
+        # Calcolo della probabilità di flag opto
+        self.prob_flag_opto = self.fraction_light_on_trials / self.prob_ITI_GT_six
+        
 
         # pumps
         if settings.BOX_NAME == 9:
@@ -229,11 +238,11 @@ class S4_5_single_pulse(Task):
 
         # function to obtain the values
         def custom_random_iti(num_trials, num_values_per_trial):
-            lambda_parameter = 0.2  # TO CHANGE lambda for exp distribution
+            lambda_param = 0.2  # TO CHANGE lambda for exp distribution
             max_value = 30  # max value
             all_values = []
             for _ in range(num_trials):
-                trial_values = generate_trial_values(lambda_parameter, max_value, num_values_per_trial)
+                trial_values = generate_trial_values(lambda_param, max_value, num_values_per_trial)
                 all_values.extend(trial_values)
             return all_values
 
@@ -258,23 +267,26 @@ class S4_5_single_pulse(Task):
         self.gui_input = ['trials_max', 'max_dur_light']
 
     def main_loop(self):
-        
-        # OPTO Trial:
-        # Genera un numero casuale tra 0 e 1
-        random_number = random.random()
 
-        #random_number = 0.74
-
-        # Decide il valore di opto_bool in base al numero casuale generato
-        if random_number <= 0.75:  # 25% di possibilità
-            self.opto_bool = 1
-        else:
-            self.opto_bool = 0
 
         self.probability = self.reward_side_vec_fixed_prob[self.current_trial][0]
         self.reward_side_number = self.reward_side_vec_fixed_prob[self.current_trial][1]
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
         self.random_iti = self.random_iti_values[self.current_trial]
+
+        # OPTO Trial:
+        # Genera un numero casuale tra 0 e 1
+        random_number = random.random()
+
+
+        # Decide il valore di opto_bool 
+        if (random_number < self.prob_flag_opto) and (self.random_iti  > self.opto_onset):   # 25% di possibilità
+            self.opto_bool = 1
+        else:
+            self.opto_bool = 0
+
+        print ("self.prob_flag_opto", self.prob_flag_opto)
+        print ("random_number", random_number)
 
         # OPTO PULSES: luz continua
 
@@ -391,7 +403,7 @@ class S4_5_single_pulse(Task):
             )
 
 
-            if self.opto_bool == 1 and self.random_iti > self.opto_onset :
+            if self.opto_bool == 1:
 
                 self.sma.add_state(
                     state_name='wrong_side',

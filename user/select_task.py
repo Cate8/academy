@@ -8,11 +8,18 @@ from user import settings
 
 
 def select_task(df, subject):
+    print('start')
 
 
     # variables by default
     task = subject.task
     wait_seconds = 3600 * settings.TIME_TO_ENTER  # wait a minimum of x hours before allowed to start the new session)
+
+    #Long time to enter for certain subjects
+    if df.subject.iloc[0] in settings.LONGER_TIME_TO_ENTER:
+        wait_seconds = 3600 * 48  #longer times for lazy animals
+        print('Longer time to enter!')
+
 
     stage = float(subject.stage)
     substage = float(subject.substage)
@@ -21,7 +28,7 @@ def select_task(df, subject):
     stim_dur_dm= 0
     stim_dur_dl= 0
 
-
+    print('01')
     last_session = df.session.max()
     df_last_session = df.loc[df['session'] == last_session].copy()         
     n_trials_last_session = df_last_session.trial.max()  # number of trials in current session
@@ -54,7 +61,7 @@ def select_task(df, subject):
     sessions_in_S4_4_total_trials = sessions_in_S4_4.groupby('session')['trial'].max() 
     sessions_in_S4_4_above_250_trials = sum(1 for value in sessions_in_S4_4_total_trials if value >  170)
 
-
+    print('02')
     if task == "S1":
         task = "S2"
 
@@ -95,15 +102,19 @@ def select_task(df, subject):
             task == "S4_4"
     
     elif task == "S4_5":
+        print('03')
         task = "S4_5"
 
+    else:
+        print('04')
+        task = "S4_5"
 
     return task, stage, substage, wait_seconds, stim_dur_ds, stim_dur_dm, stim_dur_dl, choice
 
 
 
 wait_seconds = 3600*settings.TIME_TO_ENTER  # wait a minimum of x hours before allowed to start the new session)
-
+print('05')
 
 
 
@@ -132,10 +143,7 @@ wait_seconds = 3600*settings.TIME_TO_ENTER  # wait a minimum of x hours before a
 #     #setup
 #     setup = df.box.unique()
 
-#     #Long time to enter for certain subjects
-#     if df.subject.iloc[0] in settings.LONGER_TIME_TO_ENTER:
-#         wait_seconds = 3600 * 24  #longer times for lazy animals
-#         print('Longer time to enter!')
+
 
 #     if task == 'Automatic_Water': # We want to rcover previous sessions parameters after this emergency water stage
 #         prev_session = df.loc[df['session'] == last_session - 2].iloc[-1]

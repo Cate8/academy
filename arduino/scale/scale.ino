@@ -2,26 +2,30 @@
 #include <Stepper.h>
 #include <HX711.h>
 #include <Wire.h>
-#define number_of_subjects  50
+#define number_of_subjects  41
 
 LiquidCrystal lcd(6, 7, 8, 9, 10, 11);
 HX711 LoadCell;
 char tag[22];
 String tags_array[number_of_subjects] = {"041A9DB979",
-"0417CA5FDE", "041A9DBD90", "0419A8218D", "0417CA97FA", "0419A8701C", "041A9D7BE0", "041A9DBDF9", "0419A81BFB",
 "041AE65969", "041AE63559", "041AE63FB7", "041AE63C1D", "041A9C89B3", "0419A8212D", "041AE62FB2", "041AE663ED",
 "041AE6462F", "041AE66B73", "041AE64344", "041AE64919", "041A9D86C5", "041AE648FE", "041AE63405", "041AE63E2D",
 "041AE6380A", "000C0BCE80", "0419A821B1", "0419A87352", "041A9D88DE", "0419A86B51", "041AE62B9C", "0419A8692F",
 "041A9DBBE0", "041AE66C15", "041A9D72E4", "041A9D6ABD", "000C0BCF3F", "041A9DB9F6",
-"041AE64F74", "041AE638A5", "041AE64056", "041AE646D6", "041AE66E66", "041AE65538", "041AE63E2D", "041AE63A17"};
+"041AE66CAF",
+"041AE62DE2", "041AE635F3", "041AE65E64", "041AE667D5", "041AE62FA5", "041AE63755", "041AE65979",
+"041AE66CA5", "041AE62A8B"
+};
 
 String subjects_array[number_of_subjects] = {"manual",
-"A41", "A42", "A44", "A45", "A46", "A47", "A49", "A51",
 "A83", "A84", "A85", "A86", "A87", "A88", "A89", "A90",
 "A91", "A92", "A93", "A94", "A95", "A96", "A97", "A98",
 "B1",  "B2",  "B3",  "B4",  "B5",  "B6",   "B7",  "B8",
 "B9",  "B10", "B11", "B12", "B13", "B14",
-"T1",  "T2",  "T4",  "T5",  "T6",  "T7",  "T8",  "T9"};
+"test",
+"C1",  "C2",  "C3",  "C4", "C6", "C7", "C8",
+"C9",  "C10"
+};
 
 void fetchTagData1(char tempTag[])
 {

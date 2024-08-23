@@ -23,8 +23,14 @@ import warnings
 from scipy.signal import firwin, lfilter
 import random
 
+if settings.PULSEPAL_CONNECTED:
+    from academy.pulse_pal import PulsePal
+else:
+    print('Not pulsepal found')
+    from academy.pulse_pal import FakePulsePal as PulsePal
 
-class S4_5(Task):
+
+class S4_5_train_pulse(Task):
 
     def __init__(self):
         super().__init__()
@@ -39,15 +45,13 @@ class S4_5(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        #self.prob_right_values = [0.9,0.8,0.7,0.6,0.5]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
-        self.prob_right_values = [0.9,0.8,0.6] 
-
-
+        self.prob_right_values = [0.9,0.8]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        self.block_type = "exp"
-        #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
+        #self.block_type = "exp"
+        self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
         self.prob_block_type = 'rdm_values'
         # self.prob_block_type ='permutation_prob_list'
@@ -56,6 +60,19 @@ class S4_5(Task):
         # This can cause that in some sessions, the overall prob_R over the entire session is larger than 0.5
         self.prob_Left_Right_blocks = 'balanced'
         # self.prob_Left_Right_blocks = 'indep'
+        self.opto_onset = 6 #seconds, its the time that the animals need to drink + the opto duration (the time in which the light will be ON)
+
+
+        # OPTO PARAMETERS
+
+   
+        self.max_dur_light = 1
+        self.pulse_pal = PulsePal(address='/dev/pulsepal')
+        
+        self.opto_type = 6  # 0 off, 6 for inhibition, 7 for activation
+        self.frequency_light = 20  # must be > 0
+        self.pulse_dur_on = 0.0125  # self.pulse_dur_on must be < than 1 / self.frequency_light
+
 
         # pumps
         if settings.BOX_NAME == 9:
@@ -64,10 +81,10 @@ class S4_5(Task):
             self.valve_r_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
             self.valve_r_reward = utils.water_calibration.read_last_value('port', 5).water
         elif settings.BOX_NAME == 12:
-            self.valve_l_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
-            self.valve_l_reward = utils.water_calibration.read_last_value('port', 1).water
-            self.valve_r_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
-            self.valve_r_reward = utils.water_calibration.read_last_value('port', 7).water
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 7).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 1).water
 
         # counters
         self.reward_drunk = 0
@@ -83,8 +100,8 @@ class S4_5(Task):
         elif settings.BOX_NAME == 12:
             self.centre_light_LED = (Bpod.OutputChannels.PWM4, self.led_intensity)
             self.centre_poke = (Bpod.Events.Port4In)
-            self.light_l_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
-            self.light_r_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+            self.light_l_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+            self.light_r_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
         
         self.outcome = ""
 
@@ -98,7 +115,7 @@ class S4_5(Task):
         #         x[0:] = mean_x
         #     elif x_type == "exp":
         #         x = np.random.geometric(1 / mean_x, (N_blocks, 1))
-        #         x = np.clip(x, 25, 50)  # TO CHANGE amplitude of the blocks
+        #         x = np.clip(x, 10, 50)  # TO CHANGE amplitude of the blocks
         #     else:
         #         Warning('Blocked type not supported')
         #     return x.flatten()
@@ -110,11 +127,10 @@ class S4_5(Task):
                 x[0:] = mean_x
             elif x_type == "exp":
                 mean_x = None 
-                x = np.random.uniform(25, 55, (N_blocks, 1)).astype(int)
+                x = np.random.uniform(20, 55, (N_blocks, 1)).astype(int)
             else:
                 Warning('Blocked type not supported')
             return x.flatten()
-
 
         # This function generates a vector with length N_blocks where each entry indicates the prob_Right in that block
         def generate_probs_vec(N_blocks, prob_block_type, p_list, prob_Left_Right_blocks):
@@ -197,7 +213,9 @@ class S4_5(Task):
             return x
         
                 # ITIs truncated exponential distribution 
-        lambda_param = 0.1  # # TO CHANGE this is the mean of the distribution, (1/0.1 so 10 seconds)
+        #lambda_param = 0.1  # # TO CHANGE this is the mean of the distribution, (1/0.1 so 10 seconds)
+        lambda_param = 0.2  # # TO CHANGE this is the mean of the distribution, (1/0.2 so 5 seconds)
+
 
         # funtion to generate the truncated exponential distribution for the ITIs
         def generate_trial_values(lambda_param, max_value, num_values):
@@ -212,8 +230,7 @@ class S4_5(Task):
 
         # function to obtain the values
         def custom_random_iti(num_trials, num_values_per_trial):
-            #mean_ITI = 0.1  # TO CHANGE lambda for exp distribution (average at 10 sec)
-            lambda_param = 0.2 # TO CHANGE lambda for exp distribution (average at 5 sec)
+            lambda_param = 0.2  # TO CHANGE lambda for exp distribution
             max_value = 30  # max value
             all_values = []
             for _ in range(num_trials):
@@ -239,14 +256,35 @@ class S4_5(Task):
         #print("Tailored ITI values: ", self.random_iti_values)
 
     def configure_gui(self):  # Variables that appear in the GUI
-        self.gui_input = ['trials_max']
+        self.gui_input = ['trials_max', 'max_dur_light']
 
     def main_loop(self):
+        
+        # OPTO Trial:
+        # Genera un numero casuale tra 0 e 1
+        random_number = random.random()
+
+        #random_number = 0.74
+
+        # Decide il valore di opto_bool in base al numero casuale generato
+        if random_number <= 0.75:  # 25% di possibilità
+            self.opto_bool = 1
+        else:
+            self.opto_bool = 0
 
         self.probability = self.reward_side_vec_fixed_prob[self.current_trial][0]
         self.reward_side_number = self.reward_side_vec_fixed_prob[self.current_trial][1]
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
         self.random_iti = self.random_iti_values[self.current_trial]
+
+        # OPTO PULSES: train pulses
+    
+        # tren de pulsos
+        pulse1 = self.pulse_pal.create_square_pulsetrain(self.max_dur_light, 0.005, 0.045, 5)
+        self.pulse_pal.assign_pulse(pulse1, 1)
+
+        #pulse2 = self.pulse_pal.create_square_pulse(0, 0, 0, 5)
+        #self.pulse_pal.assign_pulse(pulse2, 2)
 
 
         print("current_trial: ", self.current_trial)
@@ -316,6 +354,27 @@ class S4_5(Task):
                                         self.wrong_poke_side: 'wrong_side'},
                 output_actions=[self.light_l_LED, self.light_r_LED, (Bpod.OutputChannels.SoftCode, 20)] #softcode 20 to close door2
             )
+
+            self.sma.add_state(
+                state_name='wrong_side',
+                state_timer=0.5,
+                state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
+            )
+
+            self.sma.add_state(
+                state_name='water_delivery',
+                state_timer=self.valvetime,
+                state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'drink_delay'},
+                output_actions=[self.valve_action]
+            )    
+
+            self.sma.add_state(
+                state_name='drink_delay',
+                state_timer=self.random_iti,
+                state_change_conditions={Bpod.Events.Tup: 'exit'},
+                output_actions=[]
+            )   
             
         else:
             self.sma.add_state(
@@ -333,31 +392,73 @@ class S4_5(Task):
                 output_actions=[self.light_l_LED, self.light_r_LED]
             )
 
-        self.sma.add_state(
-            state_name='water_delivery',
-            state_timer=self.valvetime,
-            state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'drink_delay'},
-            output_actions=[self.valve_action]
-        )
 
-        self.sma.add_state(
-            state_name='wrong_side',
-            state_timer=0.5,
-            state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
-            output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
-        )
+            if self.opto_bool == 1 and self.random_iti > self.opto_onset :
 
+                self.sma.add_state(
+                    state_name='wrong_side',
+                    state_timer=0.5,
+                    state_change_conditions={Bpod.Events.Tup: 'wait_opto'},
+                    output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
+                )
 
-        self.sma.add_state(
-            state_name='drink_delay',
-            state_timer=self.random_iti,
-            state_change_conditions={Bpod.Events.Tup: 'exit'},
-            output_actions=[]
-        )
+                self.sma.add_state(
+                    state_name='water_delivery',
+                    state_timer=self.valvetime,
+                    state_change_conditions={Bpod.Events.Tup: 'wait_opto', self.correct_poke_side: 'wait_opto'},
+                    output_actions=[self.valve_action]
+                )    
 
+                self.sma.add_state(
+                    state_name='wait_opto',
+                    state_timer= 5,
+                    state_change_conditions={Bpod.Events.Tup: 'light_on', self.correct_poke_side: 'light_on'},
+                    output_actions=[]
+                )    
 
+                self.sma.add_state(
+                    state_name='light_on',
+                    state_timer= 1,
+                    state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_off'},
+                    output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
+                )    
 
+                self.sma.add_state(
+                    state_name='light_off',
+                    state_timer=0.5,
+                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                    output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
+                )
+            
+                self.sma.add_state(
+                    state_name='drink_delay',
+                    state_timer=self.random_iti - self.opto_onset,
+                    state_change_conditions={Bpod.Events.Tup: 'exit'},
+                    output_actions=[]
+                )
+ 
+            else:
+                    self.sma.add_state(
+                        state_name='wrong_side',
+                        state_timer=0.5,
+                        state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                        output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
+                    )
 
+                    self.sma.add_state(
+                        state_name='water_delivery',
+                        state_timer=self.valvetime,
+                        state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'drink_delay'},
+                        output_actions=[self.valve_action]
+                    )    
+                    
+                    self.sma.add_state(
+                            state_name='drink_delay',
+                            state_timer=self.random_iti,
+                            state_change_conditions={Bpod.Events.Tup: 'exit'},
+                            output_actions=[]
+                        )
+            
     def after_trial(self):
 
         if self.current_trial_states['water_delivery'][0][0] > 0: # check that the animal went to that state
@@ -377,10 +478,6 @@ class S4_5(Task):
             self.outcome = "omision"
 
 
-
-
-
-
         # Relevant prints
         self.register_value('side', self.correct_side)
         self.register_value('probability_r', self.probability)
@@ -392,4 +489,9 @@ class S4_5(Task):
         self.register_value('outcome', self.outcome)
         self.register_value('reward_drunk', self.reward_drunk)
         self.register_value('iti_duration', self.random_iti)
+        self.register_value('opto_type', self.opto_type)
+        self.register_value('opto_bool', self.opto_bool)
+        self.register_value('max_dur_light', self.max_dur_light)
+        self.register_value('frequency_light', self.frequency_light)
+        self.register_value('pulse_dur_on', self.pulse_dur_on)
 
