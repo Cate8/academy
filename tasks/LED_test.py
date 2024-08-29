@@ -27,10 +27,10 @@ class LED_test(Task):
             self.valve_r_time = utils.water_calibration.read_last_value('port', 5).pulse_duration
             self.valve_r_reward = utils.water_calibration.read_last_value('port', 5).water
         elif settings.BOX_NAME == 12:
-            self.valve_l_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
-            self.valve_l_reward = utils.water_calibration.read_last_value('port', 1).water
-            self.valve_r_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
-            self.valve_r_reward = utils.water_calibration.read_last_value('port', 7).water
+            self.valve_l_time = utils.water_calibration.read_last_value('port', 7).pulse_duration
+            self.valve_l_reward = utils.water_calibration.read_last_value('port', 7).water
+            self.valve_r_time = utils.water_calibration.read_last_value('port', 1).pulse_duration
+            self.valve_r_reward = utils.water_calibration.read_last_value('port', 1).water
 
 
         self.led_intensity = 255
@@ -56,17 +56,17 @@ class LED_test(Task):
             valveRight = (Bpod.OutputChannels.Valve, 5)
 
         elif settings.BOX_NAME == 12:
-            portLeftIn = Bpod.Events.Port1In
+            portLeftIn = Bpod.Events.Port7In
             portCenterIn = Bpod.Events.Port4In
-            portRightIn = Bpod.Events.Port7In
-            portLeftOut = Bpod.Events.Port1Out
+            portRightIn = Bpod.Events.Port1In
+            portLeftOut = Bpod.Events.Port7Out
             portCenterOut = Bpod.Events.Port4Out
-            portRightOut = Bpod.Events.Port7Out
-            ledLeft = (Bpod.OutputChannels.PWM1, self.led_intensity)
+            portRightOut = Bpod.Events.Port1Out
+            ledLeft = (Bpod.OutputChannels.PWM7, self.led_intensity)
             ledCenter = (Bpod.OutputChannels.PWM4, self.led_intensity)
-            ledRight = (Bpod.OutputChannels.PWM7, self.led_intensity)
-            valveLeft = (Bpod.OutputChannels.Valve, 1)
-            valveRight = (Bpod.OutputChannels.Valve, 7)
+            ledRight = (Bpod.OutputChannels.PWM1, self.led_intensity)
+            valveLeft = (Bpod.OutputChannels.Valve, 7)
+            valveRight = (Bpod.OutputChannels.Valve, 1)
     
 
         self.sma.add_state(

@@ -275,21 +275,22 @@ class S4_4(Task):
         
         elif settings.BOX_NAME == 12:
             if self.reward_side_number == 0:  # 0 per lato sinistro
-                self.correct_side = "left"
-                self.wrong_side = "right"
-                self.correct_poke_side = Bpod.Events.Port1In
-                self.wrong_poke_side = Bpod.Events.Port7In
-                self.valvetime = self.valve_l_time
-                self.valve_action = (Bpod.OutputChannels.Valve, 1)
-                self.poke_side = Bpod.Events.Port1In
-            else:  # 1 per lato destro
-                self.correct_side = "right"
-                self.wrong_side = "left"
+                self.correct_side = "left"#7
+                self.wrong_side = "right"#1
                 self.correct_poke_side = Bpod.Events.Port7In
                 self.wrong_poke_side = Bpod.Events.Port1In
-                self.valvetime = self.valve_r_time
+                self.valvetime = self.valve_l_time
                 self.valve_action = (Bpod.OutputChannels.Valve, 7)
                 self.poke_side = Bpod.Events.Port7In
+            else:  # 1 per lato destro
+                self.correct_side = "right"#1
+                self.wrong_side = "left"#7
+                self.correct_poke_side = Bpod.Events.Port1In
+                self.wrong_poke_side = Bpod.Events.Port7In
+                self.valvetime = self.valve_r_time
+                self.valve_action = (Bpod.OutputChannels.Valve, 1)
+                self.poke_side = Bpod.Events.Port1In
+
 
         ############ STATE MACHINE ################
 

@@ -107,23 +107,23 @@ class S3(Task):
                 self.poke_side = Bpod.Events.Port5In
 
         elif settings.BOX_NAME == 12:
-            if self.side == "left":
+            if self.side == "left": #7
                 self.correct_side = self.side
-                self.wrong_side = "right"
-                self.correct_poke_side= Bpod.Events.Port1In
-                self.wrong_poke_side = Bpod.Events.Port7In
+                self.wrong_side = "right" #1
+                self.correct_poke_side= Bpod.Events.Port7In
+                self.wrong_poke_side = Bpod.Events.Port1In
                 self.valvetime = self.valve_l_time
-                self.valve_action = (Bpod.OutputChannels.Valve, 1)
-                self.poke_side = Bpod.Events.Port1In
+                self.valve_action = (Bpod.OutputChannels.Valve, 7)
+                self.poke_side = Bpod.Events.Port7In
 
             else:
                 self.correct_side = self.side
-                self.wrong_side = "left"
-                self.correct_poke_side= Bpod.Events.Port7In
-                self.wrong_poke_side = Bpod.Events.Port1In
+                self.wrong_side = "left" #7
+                self.correct_poke_side= Bpod.Events.Port1In
+                self.wrong_poke_side = Bpod.Events.Port7In
                 self.valvetime = self.valve_r_time
-                self.valve_action = (Bpod.OutputChannels.Valve, 7)
-                self.poke_side = Bpod.Events.Port7In
+                self.valve_action = (Bpod.OutputChannels.Valve, 1)
+                self.poke_side = Bpod.Events.Port1In
 
         ############ STATE MACHINE ################
 

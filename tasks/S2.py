@@ -84,17 +84,17 @@ class S2(Task):
                     self.poke_side= Bpod.Events.Port5In     
 
         elif settings.BOX_NAME == 12:
-            if self.side == "left":
+            if self.side == "left": #7
                     self.valvetime = self.valve_l_time
-                    self.valve_action = (Bpod.OutputChannels.Valve, 1)
-                    self.light_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
-                    self.poke_side= Bpod.Events.Port1In
+                    self.valve_action = (Bpod.OutputChannels.Valve, 7)
+                    self.light_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+                    self.poke_side= Bpod.Events.Port7In
 
             else:
                     self.valvetime = self.valve_r_time
-                    self.valve_action = (Bpod.OutputChannels.Valve, 7)
-                    self.light_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
-                    self.poke_side= Bpod.Events.Port7In     
+                    self.valve_action = (Bpod.OutputChannels.Valve, 1)
+                    self.light_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
+                    self.poke_side= Bpod.Events.Port1In     
 
  
 

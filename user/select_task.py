@@ -17,7 +17,7 @@ def select_task(df, subject):
 
     #Long time to enter for certain subjects
     if df.subject.iloc[0] in settings.LONGER_TIME_TO_ENTER:
-        wait_seconds = 3600 * 48  #longer times for lazy animals
+        wait_seconds = 3600 * 72  #longer times for lazy animals
         print('Longer time to enter!')
 
 

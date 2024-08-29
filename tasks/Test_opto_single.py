@@ -35,8 +35,8 @@ class Test_opto_single(Task):
         elif settings.BOX_NAME == 12:
             self.centre_light_LED = (Bpod.OutputChannels.PWM4, self.led_intensity)
             self.centre_poke = (Bpod.Events.Port4In)
-            self.light_l_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
-            self.light_r_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+            self.light_l_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+            self.light_r_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
 
         
 

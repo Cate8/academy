@@ -94,18 +94,19 @@ class S1(Task):
                 self.valve_action = (Bpod.OutputChannels.Valve, 5)
                 self.light_LED = (Bpod.OutputChannels.PWM5, self.led_intensity)
                 self.poke_side= Bpod.Events.Port5In   
+        
         elif settings.BOX_NAME == 12:  
             if self.side == "left":
                 self.valvetime = self.valve_l_time
-                self.valve_action = (Bpod.OutputChannels.Valve, 1)
-                self.light_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
-                self.poke_side= Bpod.Events.Port1In
+                self.valve_action = (Bpod.OutputChannels.Valve, 7)
+                self.light_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
+                self.poke_side= Bpod.Events.Port7In
 
             else:
                 self.valvetime = self.valve_r_time
-                self.valve_action = (Bpod.OutputChannels.Valve, 7)
-                self.light_LED = (Bpod.OutputChannels.PWM7, self.led_intensity)
-                self.poke_side= Bpod.Events.Port7In   
+                self.valve_action = (Bpod.OutputChannels.Valve, 1)
+                self.light_LED = (Bpod.OutputChannels.PWM1, self.led_intensity)
+                self.poke_side= Bpod.Events.Port1In   
 
 
         #### CREATING STATE MACHINE, ADDING STATES, SENDING AND RUNNING ####
