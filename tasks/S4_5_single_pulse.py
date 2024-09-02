@@ -53,8 +53,8 @@ class S4_5_single_pulse(Task):
         self.block_type = "exp"
         #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
-        self.prob_block_type = 'rdm_values'
-        # self.prob_block_type ='permutation_prob_list'
+        # self.prob_block_type = 'rdm_values'
+        self.prob_block_type ='permutation_prob_list'
         # prob_Left_Right_blocks can be 'balanced' meaning that the prob_Right in Right blocks is the same as the prob_Left on Left blocls
         # It can also be independent meaning that the prob_Right in Right blocks is INDEP of the prob_Left in Left blocks.
         # This can cause that in some sessions, the overall prob_R over the entire session is larger than 0.5
@@ -140,53 +140,67 @@ class S4_5_single_pulse(Task):
                 Warning('Blocked type not supported')
             return x.flatten()
 
-        # This function generates a vector with length N_blocks where each entry indicates the prob_Right in that block
         def generate_probs_vec(N_blocks, prob_block_type, p_list, prob_Left_Right_blocks):
-            # N_trials = np.sum(block_duration_vec)
+    
+            if (N_blocks % 2) == 1:
+                N_blocks += 1
+                warnings.warn('We increased the number of blocks by one to have an even number')
+                print('N_blocks = ', N_blocks)
+
+            N_probs = len(p_list)
+            print('N_probs = ', N_probs)
+            
             # Allocate memory for the probs_vec array x
-            x = np.ndarray(N_blocks, dtype=float)
-            N_blocks_by_half = round(N_blocks / 2)
-            prob_list_blocks135 = np.zeros(N_blocks_by_half, dtype=float)
-            # blocks 1, 3, 5, 7 ... take values from
-            rdm_right_block_order = np.random.permutation(
-                [0, 1])  # the first position of this array rdm_right_block_order[0] ...
-            # will determine which side is more probable in the first block
-            # if rdm_right_block_order[0]=0 then the first block is a Right block , i.e. prob_Right > 0.5
-            # if rdm_right_block_order[0]=1 then the first block is a Left block , i.e. prob_Right < 0.5
+            output_probs_vec = np.ndarray(N_blocks, dtype=float)
 
-            # N_blocks_by_half= len(x[rdm_right_block_order[0]::2]) #we start the block in the rdm po
-            if (prob_block_type == 'rdm_values'):
-                prob_list_blocks135 = np.random.choice(p_list, N_blocks_by_half)
-            elif (prob_block_type == 'permutation_prob_list'):
-                per = np.random.permutation(p_list)
-                N = len(per)
-                times_rep_per = round(N_blocks_by_half / N)
-                # we fill the prob_list_blocks135 array with as many repetitions from per as we can fit.
+            N_blocks_by_half = N_blocks // 2
+            print('N_blocks_by_half = ', N_blocks_by_half)
+
+            prob_list_Right_blocks = np.zeros(N_blocks_by_half, dtype=float)
+            prob_list_Left_blocks = np.zeros(N_blocks_by_half, dtype=float)
+
+            if prob_block_type == 'rdm_values':
+                # Generate Right blocks 
+                prob_list_Right_blocks = np.random.choice(p_list, N_blocks_by_half) 
+                # Generate Left blocks 
+                if prob_Left_Right_blocks == 'indep':
+                    prob_list_Left_blocks = 1. - np.squeeze(np.random.choice(p_list, N_blocks_by_half))
+                elif prob_Left_Right_blocks == 'balanced':
+                    prob_list_Left_blocks = 1. - np.random.permutation(prob_list_Right_blocks)
+                else:
+                    warnings.warn('Specify the relation between Left and Right probs as balanced or indep')
+                    return None  # Exit the function if input is invalid
+
+            elif prob_block_type == 'permutation_prob_list':
+                times_rep_per = N_blocks_by_half // N_probs
+                print('times_rep_per = ', times_rep_per)
                 for i in range(times_rep_per):
-                    prob_list_blocks135[0 + i * N:0 + (i + 1) * N] = per
-                # if the length N_blocks_by_half of the array prob_list_blocks135 is not a multiple of N, then we need to fill up the remainder of the entries of prob_list_blocks135
-                for i in range(np.remainder(N_blocks_by_half, N)):
-                    prob_list_blocks135[N * times_rep_per + i] = prob_list_blocks135[i]
+                    per_Right_probs = np.random.permutation(p_list)
+                    per_Left_probs = 1. - np.random.permutation(p_list)
+                    prob_list_Right_blocks[i * N_probs:(i + 1) * N_probs] = per_Right_probs
+                    prob_list_Left_blocks[i * N_probs:(i + 1) * N_probs] = per_Left_probs
+                
+                remainder = N_blocks_by_half % N_probs
+                if remainder > 0:
+                    per_Right_probs = np.random.permutation(p_list)
+                    per_Left_probs = 1. - np.random.permutation(p_list)
+                    prob_list_Right_blocks[-remainder:] = per_Right_probs[:remainder]
+                    prob_list_Left_blocks[-remainder:] = per_Left_probs[:remainder]
+
             else:
-                Warning('Specify the way to take prob values from prob_list: rdm_values or permutation_prob_list ')
+                warnings.warn('Specify the way to take prob values from prob_list: rdm_values or permutation_prob_list')
+                return None  # Exit the function if input is invalid
 
-            x[rdm_right_block_order[0]::2] = prob_list_blocks135
+            # Assign Right and Left probs to the output vector depending on the order chosen by rdm_right_block_order
+            rdm_right_block_order = np.random.permutation([0, 1])
+            output_probs_vec[rdm_right_block_order[0]::2] = prob_list_Right_blocks
+            output_probs_vec[rdm_right_block_order[1]::2] = prob_list_Left_blocks
 
-            # N_blocks_by_half= len(x[rdm_right_block_order[1]::2]) : if N_blocks is even, then the two halves of the x vector should have the same length
-            if (
-                    prob_Left_Right_blocks == 'indep'):  # in this condition, the Right and Left blocks have independent probabilities
-                x[rdm_right_block_order[1]::2] = 1. - np.squeeze(np.random.choice(p_list, (N_blocks_by_half, 1)))
-            elif (
-                    prob_Left_Right_blocks == 'balanced'):  # in this condition, the Left blocks have 1 - p_Right but in a random order, so that the unconditional p_Right across the session is 0.5
-                x[rdm_right_block_order[1]::2] = 1. - np.random.permutation(prob_list_blocks135)
-            else:
-                Warning('Specify the relation between Left and Right probs as balanced or indep')
+            return output_probs_vec     
 
-            return x
-
-            # This function generates a 2-column vector with length N_trials: where each entry indicates the prob_Right in that block
-            # In colum 0, we specify the value on each trial of the prob_Right
-            # In colum 1, we specify the binary value of where the reward is in that trial: =1 (reward on Right port), =0 (reward on Left port)
+    # This function generates a 2-column vector with length N_trials: where each entry indicates the prob_Right in that block
+    # In colum 0, we specify the value on each trial of the prob_Right
+    # In colum 1, we specify the binary value of where the reward is in that trial: =1 (reward on Right port), =0 (reward on Left port)
 
         def generate_blocked_reward_side_vec(N_blocks, block_duration_vec, probs_vec):
             # N_x = block_duration_vec.sum()
