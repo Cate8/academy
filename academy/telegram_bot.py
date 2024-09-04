@@ -166,10 +166,10 @@ def alarm_starting_task(task, error, subject_name):
     except:
         pass
 
-def alarm_main_loop(error):
+def alarm_main_loop():
     try:
         url = 'https://api.telegram.org/bot%s/sendMessage' % settings.TELEGRAM_TOKEN
-        message = 'ALARM: in main loop: ' + error
+        message = 'ALARM: in main loop'
         utils.alarms.add_new_item({'message': message})
         data = parse.urlencode({'chat_id': settings.TELEGRAM_CHAT, 'text': message})
         request.urlopen(url, data.encode('utf-8'))

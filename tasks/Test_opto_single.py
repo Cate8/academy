@@ -46,15 +46,15 @@ class Test_opto_single(Task):
 
 
     def main_loop(self):
-        self.max_dur_light = 2
+        self.max_dur_light = 1
 
 
         # luz continua
         pulse1 = self.pulse_pal.create_square_pulse(self.max_dur_light, 0, 0.2, 5)
         self.pulse_pal.assign_pulse(pulse1, 1)
 
-        pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5)
-        self.pulse_pal.assign_pulse(pulse2, 2)
+        # pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5)
+        # self.pulse_pal.assign_pulse(pulse2, 2) #use it if ypu need to stop the pulse before one sec (or the regular duration) 
 
 
         # tren de pulsos

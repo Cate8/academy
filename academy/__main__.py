@@ -15,6 +15,8 @@ from academy.softcode import softcode
 from academy.camera import cam1, cam2, cam3
 from academy.ecohab import eco
 from user import settings
+import shutil
+import datetime
 
 
 # 0 waiting
@@ -96,7 +98,14 @@ def main():
         except Exception as error:
             print(traceback.format_exc())
             utils.log('Academy', 'Error in main loop', 'ERROR')
-            telegram_bot.alarm_main_loop(error)
+            telegram_bot.alarm_main_loop()
+
+            current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            source_file = '~/academy/data/sessions/session.csv'
+            destination_file = f'~/academy/data/sessions/session_crash_{current_datetime}.csv'
+            # Duplicar el archivo
+            shutil.copy(source_file, destination_file)
+
             utils.state_after_relaunch = utils.state
             relaunch()
 
