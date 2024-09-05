@@ -103,6 +103,10 @@ def main():
             current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
             source_file = '~/academy/data/sessions/session.csv'
             destination_file = f'~/academy/data/sessions/session_crash_{current_datetime}.csv'
+
+            source_file = os.path.expanduser(source_file)
+            destination_file = os.path.expanduser(destination_file)
+
             # Duplicar el archivo
             shutil.copy(source_file, destination_file)
 
@@ -478,7 +482,7 @@ def subject_action(first_time, last_tags):
         if first_time:
             utils.log_cam(utils.subject.name, 'Other subjects detected in the last seconds', 'ACTION')
     else:
-        if time_utils.now_datetime() > utils.super_subject.min_time or utils.super_subject.all_in:
+        if time_utils.now_datetime() > utils.super_subject.min_time:
             if utils.super_subject.task is None:
                 utils.log_cam('Academy', 'task: ' + utils.subject.task + 'not found for subject: ' + utils.subject.name,
                               'ERROR')
