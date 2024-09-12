@@ -6,6 +6,9 @@ Teach mice to approach the central lickport to get the water reward
 Starts with centre port LED ON. then side (L/R) water port LED ON + and it needs a nosepoke in the right lickport to get the automatic delivery of water.
 All the LEDs stay ON until poke or timeup.
 
+this version has 50 % of probability to turn on the opto light when the ITI is longer than 6 sec (otpo onset)
+to generate more trials with opto off to compare with
+
 ######  PORTS INFO  #######
 
 Port 1 - Right port
@@ -72,16 +75,7 @@ class S4_5_single_pulse(Task):
         self.frequency_light = 20  # must be > 0
         self.pulse_dur_on = 0.0125  # self.pulse_dur_on must be < than 1 / self.frequency_light
 
-
-        self.mean_ITI = 5
-        self.fraction_light_on_trials = 0.25
-        self.prob_ITI_GT_six = np.exp(-6/self.mean_ITI)
-        
-        
-        # Calcolo della probabilità di flag opto
-        self.prob_flag_opto = self.fraction_light_on_trials / self.prob_ITI_GT_six
-        
-
+    
         # pumps
         if settings.BOX_NAME == 9:
             self.valve_l_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
@@ -289,17 +283,19 @@ class S4_5_single_pulse(Task):
         self.random_iti = self.random_iti_values[self.current_trial]
 
         # OPTO Trial:
-        # Genera un numero casuale tra 0 e 1
-        random_number = random.random()
+        # Generate a random number that is either 0 or 1 with 50% probability
+        random_number = random.randint(0, 1)
 
-
-        # Decide il valore di opto_bool 
-        if (random_number < self.prob_flag_opto) and (self.random_iti  > self.opto_onset):   # 25% di possibilità
-            self.opto_bool = 1
+        if self.random_iti > 6:
+            # Decide opto bool value 
+            if (random_number) == 1: 
+                self.opto_bool = 1
+            else:
+                self.opto_bool = 0
         else:
             self.opto_bool = 0
 
-        print ("self.prob_flag_opto", self.prob_flag_opto)
+    
         print ("random_number", random_number)
 
         # OPTO PULSES: luz continua
