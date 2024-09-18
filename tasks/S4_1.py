@@ -6,10 +6,6 @@ Teach mice to approach the central lickport to get the water reward
 Starts with centre port LED ON. then side (L/R) water port LED ON + and it needs a nosepoke in the right lickport to get the automatic delivery of water.
 All the LEDs stay ON until poke or timeup.
 
-I this version, the first two blocks always start with the highest probabilities: random choice in between 0.9 and 0.1 and if 0.9 
-reward right, then block 1 is going to be 0.1 so reward left and viceversa. 
-
-
 ######  PORTS INFO  #######
 
 Port 1 - Right port
@@ -119,8 +115,7 @@ class S4_1(Task):
             return x.flatten()
 
         def generate_probs_vec(N_blocks, prob_block_type, p_list, prob_Left_Right_blocks):
-
-            # Force N_blocks to be even
+    
             if (N_blocks % 2) == 1:
                 N_blocks += 1
                 warnings.warn('We increased the number of blocks by one to have an even number')
@@ -128,8 +123,8 @@ class S4_1(Task):
 
             N_probs = len(p_list)
             print('N_probs = ', N_probs)
-
-            # Allocate memory for output_probs_vec
+            
+            # Allocate memory for the probs_vec array x
             output_probs_vec = np.ndarray(N_blocks, dtype=float)
 
             N_blocks_by_half = N_blocks // 2
@@ -138,22 +133,10 @@ class S4_1(Task):
             prob_list_Right_blocks = np.zeros(N_blocks_by_half, dtype=float)
             prob_list_Left_blocks = np.zeros(N_blocks_by_half, dtype=float)
 
-            # Random choice between 0.9 and 0.1 for the first block
-            first_block_prob = np.random.choice([0.9, 0.1])
-            second_block_prob = 1.0 - first_block_prob  # The other value for the second block
-
-            # Set the first block with the random choice and the second with the opposite
-            output_probs_vec[0] = first_block_prob  # First block, random probability
-            output_probs_vec[1] = second_block_prob  # Second block, the opposite
-
-            # Reduce N_blocks by 2 to account for the first two blocks already assigned
-            N_blocks -= 2
-            N_blocks_by_half = N_blocks // 2
-
             if prob_block_type == 'rdm_values':
-                # Generate random Right blocks
+                # Generate Right blocks 
                 prob_list_Right_blocks = np.random.choice(p_list, N_blocks_by_half) 
-                # Generate Left blocks
+                # Generate Left blocks 
                 if prob_Left_Right_blocks == 'indep':
                     prob_list_Left_blocks = 1. - np.squeeze(np.random.choice(p_list, N_blocks_by_half))
                 elif prob_Left_Right_blocks == 'balanced':
@@ -170,7 +153,7 @@ class S4_1(Task):
                     per_Left_probs = 1. - np.random.permutation(p_list)
                     prob_list_Right_blocks[i * N_probs:(i + 1) * N_probs] = per_Right_probs
                     prob_list_Left_blocks[i * N_probs:(i + 1) * N_probs] = per_Left_probs
-
+                
                 remainder = N_blocks_by_half % N_probs
                 if remainder > 0:
                     per_Right_probs = np.random.permutation(p_list)
@@ -182,52 +165,49 @@ class S4_1(Task):
                 warnings.warn('Specify the way to take prob values from prob_list: rdm_values or permutation_prob_list')
                 return None  # Exit the function if input is invalid
 
-            # Assign Right and Left blocks starting from the third block (index 2 onwards)
+            # Assign Right and Left probs to the output vector depending on the order chosen by rdm_right_block_order
             rdm_right_block_order = np.random.permutation([0, 1])
-            output_probs_vec[rdm_right_block_order[0] + 2::2] = prob_list_Right_blocks
-            output_probs_vec[rdm_right_block_order[1] + 2::2] = prob_list_Left_blocks
+            output_probs_vec[rdm_right_block_order[0]::2] = prob_list_Right_blocks
+            output_probs_vec[rdm_right_block_order[1]::2] = prob_list_Left_blocks
 
-            return output_probs_vec
-        
+            return output_probs_vec     
+
     # This function generates a 2-column vector with length N_trials: where each entry indicates the prob_Right in that block
     # In colum 0, we specify the value on each trial of the prob_Right
     # In colum 1, we specify the binary value of where the reward is in that trial: =1 (reward on Right port), =0 (reward on Left port)
 
         def generate_blocked_reward_side_vec(N_blocks, block_duration_vec, probs_vec):
-            # Initialize the output array
+            # N_x = block_duration_vec.sum()
+            # x = np.ndarray(shape= (N_x, 1), dtype = int)
             x = np.zeros([1, 3])
 
-            print(x)
+            #print(x)
 
             for i_block in range(N_blocks):
-                # Convert the array entry block_duration_vec[i_block] into a scalar int
+                # we convert the array entry  block_duration_vec[i_block] into a scalar int or it will complain: "TypeError: only integer scalar arrays can be converted to a scalar index"
                 bloc_dur = np.take(block_duration_vec[i_block], 0)
 
-                # Column vector with the p_value of the block
+                # column vector with the p_value of the block
                 p = probs_vec[i_block] * np.ones((bloc_dur, 1), dtype=float)
 
-                # Column vector with the rewarded sides of the block
-                # If the probability is > 0.5, reward is on the right (1), otherwise left (0)
-                if probs_vec[i_block] > 0.5:
-                    # Reward goes to the right (1)
-                    y = np.ones((bloc_dur, 1), dtype=int)
-                else:
-                    # Reward goes to the left (0)
-                    y = np.zeros((bloc_dur, 1), dtype=int)
+                # column vector with the rewarded sides of the block block_duration_vec[i_block]
+                y = np.random.binomial(1, probs_vec[i_block], (bloc_dur, 1))
 
-                # Create a column vector with the block number repeated for block duration
+                # paste the two columns together
                 blocks = np.repeat(i_block, bloc_dur).reshape(-1,1)
 
-                # Concatenate probability, reward side, and block number
                 Z = np.concatenate((p, y, blocks), axis=1)
 
-                # Concatenate the current block to the previous blocks
+                # conncateate the two-column vector of the block with previous blocks
+
+
                 x = np.concatenate((x, Z), axis=0)
 
-            # Remove the first row of x which contains zeros
+                # remove the first row of x which contains zeros
             x = np.delete(x, 0, axis=0)
-            print("x: " + str(x))
+            #print("x: " + str(x))
             return x
+        
                 # ITIs truncated exponential distribution 
         lambda_param = 0.5  # this is the mean of the distribution, (1/5 so 5 seconds)
 
