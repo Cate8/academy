@@ -395,7 +395,7 @@ class S4_5_second_condition(Task):
                 self.sma.add_state(
                     state_name='wrong_side',
                     state_timer=0.5,
-                    state_change_conditions={Bpod.Events.Tup: 'wait_opto'},
+                    state_change_conditions={Bpod.Events.Tup: 'light_on'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
                 )
                 print('entering in waterdelivery')
@@ -431,7 +431,7 @@ class S4_5_second_condition(Task):
                 print('iti after opto')
                 self.sma.add_state(
                     state_name='drink_delay',
-                    state_timer=self.random_iti,
+                    state_timer=self.random_iti - 1.5,
                     state_change_conditions={Bpod.Events.Tup: 'exit'},
                     output_actions=[]
                     )
