@@ -1,18 +1,13 @@
 """""
 ######  TASK INFO  #######
 
-opto illumination to assest if mPFC activity is involved in choice maintenance. illumination
-after choice (after state: side_light ) in both wrong and correct choice. 
-
-
-Teach mice to approach the central lickport to get the water reward
-
 Starts with centre port LED ON. then side (L/R) water port LED ON + and it needs a nosepoke in the right lickport to get the automatic delivery of water.
 All the LEDs stay ON until poke or timeup.
 
-this version has 50 % of probability to turn on the opto light when the ITI is longer than 6 sec (otpo onset)
-to generate more trials with opto off to compare with
-
+SECOND CONDITION batch_B (oct 2024): Given that mPFC activity may not be involved in choice maintenance, perhaps it is involved in the choice value updating.  
+To test this, this second stimulation condition and photo-inhibit is going to be deliverd right after reward delivery (0.5 past side poke, in both correct and error trials).
+This would give us a lot of OFF trials to compare with (essentially all trials with no stimulation would be OFF trials) and could acquire ON trials at a faster speed
+(e.g. 20% of total trials could be opto_bool=1; that gives you around 40-50 ON trials per session per mouse, 200-250 per week per mouse).
 ######  PORTS INFO  #######
 
 Port 1 - Right port
@@ -37,7 +32,7 @@ else:
     from academy.pulse_pal import FakePulsePal as PulsePal
 
 
-class S4_5_single_pulse(Task):
+class S4_5_second_condition(Task):
 
     def __init__(self):
         super().__init__()
@@ -57,29 +52,30 @@ class S4_5_single_pulse(Task):
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
-        self.block_type = "exp"
-        #self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
+        #self.block_type = "exp"
+        self.block_type = "fixed" #block_type can take the categories 'fixed' and 'exp'
         # This can be rdm_values or permutation_prob_list
-        # self.prob_block_type = 'rdm_values'
-        self.prob_block_type ='permutation_prob_list'
+        self.prob_block_type = 'rdm_values'
+        # self.prob_block_type ='permutation_prob_list'
         # prob_Left_Right_blocks can be 'balanced' meaning that the prob_Right in Right blocks is the same as the prob_Left on Left blocls
         # It can also be independent meaning that the prob_Right in Right blocks is INDEP of the prob_Left in Left blocks.
         # This can cause that in some sessions, the overall prob_R over the entire session is larger than 0.5
         self.prob_Left_Right_blocks = 'balanced'
         # self.prob_Left_Right_blocks = 'indep'
-        self.opto_onset = 6 #seconds, its the time that the animals need to drink + the opto duration (the time in which the light will be ON)
+        self.opto_onset = 0.5 #seconds, its the time for opto onset after the animal make a choice
 
 
         # OPTO PARAMETERS
 
-        self.max_dur_light = 1
+   
+        self.max_dur_light = 2
         self.pulse_pal = PulsePal(address='/dev/pulsepal')
         
         self.opto_type = 6  # 0 off, 6 for inhibition, 7 for activation
         self.frequency_light = 20  # must be > 0
         self.pulse_dur_on = 0.0125  # self.pulse_dur_on must be < than 1 / self.frequency_light
 
-    
+
         # pumps
         if settings.BOX_NAME == 9:
             self.valve_l_time = utils.water_calibration.read_last_value('port', 2).pulse_duration
@@ -111,94 +107,67 @@ class S4_5_single_pulse(Task):
         
         self.outcome = ""
 
-        # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
-        # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block
-        # def generate_block_duration_vec(x_type, mean_x, N_blocks):
-        #     # if (N_blocks % 2 == 0):
-        #     # Warning('The number of blocks must be an even number')
-        #     x = np.ndarray(shape=(N_blocks, 1), dtype=int)
-        #     if x_type == "fixed":
-        #         x[0:] = mean_x
-        #     elif x_type == "exp":
-        #         x = np.random.geometric(1 / mean_x, (N_blocks, 1))
-        #         x = np.clip(x, 10, 50)  # TO CHANGE amplitude of the blocks
-        #     else:
-        #         Warning('Blocked type not supported')
-        #     return x.flatten()
-
-                # RANDOM UNIFORM DISTRIBUTION
+        # This function generates a vector with length N_blocks where each entry indicates the number of trials in that block: RANDOM GEOMETRIC DISTRIBUTION
         def generate_block_duration_vec(x_type, mean_x, N_blocks):
+            # if (N_blocks % 2 == 0):
+            # Warning('The number of blocks must be an even number')
             x = np.ndarray(shape=(N_blocks, 1), dtype=int)
             if x_type == "fixed":
                 x[0:] = mean_x
             elif x_type == "exp":
-                mean_x = None 
-                x = np.random.uniform(20, 55, (N_blocks, 1)).astype(int)
+                x = np.random.geometric(1 / mean_x, (N_blocks, 1))
+                x = np.clip(x, 10, 50)  # TO CHANGE amplitude of the blocks
             else:
                 Warning('Blocked type not supported')
             return x.flatten()
 
+        # This function generates a vector with length N_blocks where each entry indicates the prob_Right in that block
         def generate_probs_vec(N_blocks, prob_block_type, p_list, prob_Left_Right_blocks):
-    
-            if (N_blocks % 2) == 1:
-                N_blocks += 1
-                warnings.warn('We increased the number of blocks by one to have an even number')
-                print('N_blocks = ', N_blocks)
-
-            N_probs = len(p_list)
-            print('N_probs = ', N_probs)
-            
+            # N_trials = np.sum(block_duration_vec)
             # Allocate memory for the probs_vec array x
-            output_probs_vec = np.ndarray(N_blocks, dtype=float)
+            x = np.ndarray(N_blocks, dtype=float)
+            N_blocks_by_half = round(N_blocks / 2)
+            prob_list_blocks135 = np.zeros(N_blocks_by_half, dtype=float)
+            # blocks 1, 3, 5, 7 ... take values from
+            rdm_right_block_order = np.random.permutation(
+                [0, 1])  # the first position of this array rdm_right_block_order[0] ...
+            # will determine which side is more probable in the first block
+            # if rdm_right_block_order[0]=0 then the first block is a Right block , i.e. prob_Right > 0.5
+            # if rdm_right_block_order[0]=1 then the first block is a Left block , i.e. prob_Right < 0.5
 
-            N_blocks_by_half = N_blocks // 2
-            print('N_blocks_by_half = ', N_blocks_by_half)
-
-            prob_list_Right_blocks = np.zeros(N_blocks_by_half, dtype=float)
-            prob_list_Left_blocks = np.zeros(N_blocks_by_half, dtype=float)
-
-            if prob_block_type == 'rdm_values':
-                # Generate Right blocks 
-                prob_list_Right_blocks = np.random.choice(p_list, N_blocks_by_half) 
-                # Generate Left blocks 
-                if prob_Left_Right_blocks == 'indep':
-                    prob_list_Left_blocks = 1. - np.squeeze(np.random.choice(p_list, N_blocks_by_half))
-                elif prob_Left_Right_blocks == 'balanced':
-                    prob_list_Left_blocks = 1. - np.random.permutation(prob_list_Right_blocks)
-                else:
-                    warnings.warn('Specify the relation between Left and Right probs as balanced or indep')
-                    return None  # Exit the function if input is invalid
-
-            elif prob_block_type == 'permutation_prob_list':
-                times_rep_per = N_blocks_by_half // N_probs
-                print('times_rep_per = ', times_rep_per)
+            # N_blocks_by_half= len(x[rdm_right_block_order[0]::2]) #we start the block in the rdm po
+            if (prob_block_type == 'rdm_values'):
+                prob_list_blocks135 = np.random.choice(p_list, N_blocks_by_half)
+            elif (prob_block_type == 'permutation_prob_list'):
+                per = np.random.permutation(p_list)
+                N = len(per)
+                times_rep_per = round(N_blocks_by_half / N)
+                # we fill the prob_list_blocks135 array with as many repetitions from per as we can fit.
                 for i in range(times_rep_per):
-                    per_Right_probs = np.random.permutation(p_list)
-                    per_Left_probs = 1. - np.random.permutation(p_list)
-                    prob_list_Right_blocks[i * N_probs:(i + 1) * N_probs] = per_Right_probs
-                    prob_list_Left_blocks[i * N_probs:(i + 1) * N_probs] = per_Left_probs
-                
-                remainder = N_blocks_by_half % N_probs
-                if remainder > 0:
-                    per_Right_probs = np.random.permutation(p_list)
-                    per_Left_probs = 1. - np.random.permutation(p_list)
-                    prob_list_Right_blocks[-remainder:] = per_Right_probs[:remainder]
-                    prob_list_Left_blocks[-remainder:] = per_Left_probs[:remainder]
-
+                    prob_list_blocks135[0 + i * N:0 + (i + 1) * N] = per
+                # if the length N_blocks_by_half of the array prob_list_blocks135 is not a multiple of N, then we need to fill up the remainder of the entries of prob_list_blocks135
+                for i in range(np.remainder(N_blocks_by_half, N)):
+                    prob_list_blocks135[N * times_rep_per + i] = prob_list_blocks135[i]
             else:
-                warnings.warn('Specify the way to take prob values from prob_list: rdm_values or permutation_prob_list')
-                return None  # Exit the function if input is invalid
+                Warning('Specify the way to take prob values from prob_list: rdm_values or permutation_prob_list ')
 
-            # Assign Right and Left probs to the output vector depending on the order chosen by rdm_right_block_order
-            rdm_right_block_order = np.random.permutation([0, 1])
-            output_probs_vec[rdm_right_block_order[0]::2] = prob_list_Right_blocks
-            output_probs_vec[rdm_right_block_order[1]::2] = prob_list_Left_blocks
+            x[rdm_right_block_order[0]::2] = prob_list_blocks135
 
-            return output_probs_vec     
+            # N_blocks_by_half= len(x[rdm_right_block_order[1]::2]) : if N_blocks is even, then the two halves of the x vector should have the same length
+            if (
+                    prob_Left_Right_blocks == 'indep'):  # in this condition, the Right and Left blocks have independent probabilities
+                x[rdm_right_block_order[1]::2] = 1. - np.squeeze(np.random.choice(p_list, (N_blocks_by_half, 1)))
+            elif (
+                    prob_Left_Right_blocks == 'balanced'):  # in this condition, the Left blocks have 1 - p_Right but in a random order, so that the unconditional p_Right across the session is 0.5
+                x[rdm_right_block_order[1]::2] = 1. - np.random.permutation(prob_list_blocks135)
+            else:
+                Warning('Specify the relation between Left and Right probs as balanced or indep')
 
-    # This function generates a 2-column vector with length N_trials: where each entry indicates the prob_Right in that block
-    # In colum 0, we specify the value on each trial of the prob_Right
-    # In colum 1, we specify the binary value of where the reward is in that trial: =1 (reward on Right port), =0 (reward on Left port)
+            return x
+
+            # This function generates a 2-column vector with length N_trials: where each entry indicates the prob_Right in that block
+            # In colum 0, we specify the value on each trial of the prob_Right
+            # In colum 1, we specify the binary value of where the reward is in that trial: =1 (reward on Right port), =0 (reward on Left port)
 
         def generate_blocked_reward_side_vec(N_blocks, block_duration_vec, probs_vec):
             # N_x = block_duration_vec.sum()
@@ -250,11 +219,12 @@ class S4_5_single_pulse(Task):
 
         # function to obtain the values
         def custom_random_iti(num_trials, num_values_per_trial):
-            lambda_param = 0.2  # TO CHANGE lambda for exp distribution
+            #lambda_parameter = 1 #to make te manuals test faster
+            lambda_parameter = 0.2  # TO CHANGE lambda for exp distribution
             max_value = 30  # max value
             all_values = []
             for _ in range(num_trials):
-                trial_values = generate_trial_values(lambda_param, max_value, num_values_per_trial)
+                trial_values = generate_trial_values(lambda_parameter, max_value, num_values_per_trial)
                 all_values.extend(trial_values)
             return all_values
 
@@ -270,7 +240,7 @@ class S4_5_single_pulse(Task):
                 #Generate the vector tailored ITIs values (from 1 to 30 sec, mean=5 sec)
         self.random_iti_values = custom_random_iti(self.trials_max, 1)
 
-        print("block_duration_vec: ", self.block_duration_vec)
+        #print("block_duration_vec: ", self.block_duration_vec)
         #print("probs_vector: ", self.probs_vector)
         #print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
         #print("Tailored ITI values: ", self.random_iti_values)
@@ -279,43 +249,35 @@ class S4_5_single_pulse(Task):
         self.gui_input = ['trials_max', 'max_dur_light']
 
     def main_loop(self):
+        
+        # OPTO Trial:
+        # it generates a random number between 0 and 1
+        random_number = random.random()
 
+        if random_number <= 0.25:  # 25% of possibility
+            self.opto_bool = 1
+        else:
+            self.opto_bool = 0
 
         self.probability = self.reward_side_vec_fixed_prob[self.current_trial][0]
         self.reward_side_number = self.reward_side_vec_fixed_prob[self.current_trial][1]
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
         self.random_iti = self.random_iti_values[self.current_trial]
 
-        # OPTO Trial:
-        # Generate a random number that is either 0 or 1 with 50% probability
-        random_number = random.randint(0, 1)
-
-        if self.random_iti > 6:
-            # Decide opto bool value 
-            if (random_number) == 1: 
-                self.opto_bool = 1
-            else:
-                self.opto_bool = 0
-        else:
-            self.opto_bool = 0
-
+        # OPTO PULSES: square pulse
     
-        print ("random_number", random_number)
-
-        # OPTO PULSES: luz continua
-
         pulse1 = self.pulse_pal.create_square_pulse(1, 0, 0.2, 5)
         self.pulse_pal.assign_pulse(pulse1, 1)
 
-        #pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5)
-        # self.pulse_pal.assign_pulse(pulse2, 2)
-    
+        #pulse2 = self.pulse_pal.create_square_pulse(0, 0, 0, 5)
+        #self.pulse_pal.assign_pulse(pulse2, 2)
+
 
         print("current_trial: ", self.current_trial)
         print("block_identity: ", self.block_identity)
         print("probability: ", self.probability)
         print("reward_side_number: ", self.reward_side_number)
-        #print("ITI_duration: ", self.random_iti)
+        print("opto_bool: ", self.opto_bool)
 
 
         if settings.BOX_NAME == 9:
@@ -338,21 +300,21 @@ class S4_5_single_pulse(Task):
         
         elif settings.BOX_NAME == 12:
             if self.reward_side_number == 0:  # 0 per lato sinistro
-                self.correct_side = "left"#7
-                self.wrong_side = "right"#1
-                self.correct_poke_side = Bpod.Events.Port7In
-                self.wrong_poke_side = Bpod.Events.Port1In
-                self.valvetime = self.valve_l_time
-                self.valve_action = (Bpod.OutputChannels.Valve, 7)
-                self.poke_side = Bpod.Events.Port7In
-            else:  # 1 per lato destro
-                self.correct_side = "right"#1
-                self.wrong_side = "left"#7
+                self.correct_side = "left"
+                self.wrong_side = "right"
                 self.correct_poke_side = Bpod.Events.Port1In
                 self.wrong_poke_side = Bpod.Events.Port7In
-                self.valvetime = self.valve_r_time
+                self.valvetime = self.valve_l_time
                 self.valve_action = (Bpod.OutputChannels.Valve, 1)
                 self.poke_side = Bpod.Events.Port1In
+            else:  # 1 per lato destro
+                self.correct_side = "right"
+                self.wrong_side = "left"
+                self.correct_poke_side = Bpod.Events.Port7In
+                self.wrong_poke_side = Bpod.Events.Port1In
+                self.valvetime = self.valve_r_time
+                self.valve_action = (Bpod.OutputChannels.Valve, 7)
+                self.poke_side = Bpod.Events.Port7In
 
 
 
@@ -401,13 +363,14 @@ class S4_5_single_pulse(Task):
             )   
             
         else:
+            print('entering in centre light start')
             self.sma.add_state(
                 state_name='center_light',
                 state_timer= 1000,
                 state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.centre_poke: 'side_light'},
                 output_actions=[self.centre_light_LED]
             )
-
+            print('entering in side light start')
             self.sma.add_state(
                 state_name='side_light',
                 state_timer= 10,
@@ -416,16 +379,15 @@ class S4_5_single_pulse(Task):
                 output_actions=[self.light_l_LED, self.light_r_LED]
             )
 
-
             if self.opto_bool == 1:
-
+                print('entering in wrong side')
                 self.sma.add_state(
                     state_name='wrong_side',
                     state_timer=0.5,
                     state_change_conditions={Bpod.Events.Tup: 'wait_opto'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
                 )
-
+                print('entering in waterdelivery')
                 self.sma.add_state(
                     state_name='water_delivery',
                     state_timer=self.valvetime,
@@ -433,56 +395,64 @@ class S4_5_single_pulse(Task):
                     output_actions=[self.valve_action]
                 )    
 
+                print('entering in wait opto')
                 self.sma.add_state(
                     state_name='wait_opto',
-                    state_timer= 5,
+                    state_timer= 0.5,
                     state_change_conditions={Bpod.Events.Tup: 'light_on'},
                     output_actions=[]
                 )    
-
+                print('turning opto on')
                 self.sma.add_state(
                     state_name='light_on',
                     state_timer= 1,
                     state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_on'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
                 )    
-
+                print('turning opto off')
                 self.sma.add_state(
                     state_name='light_off',
                     state_timer=0.5,
                     state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'light_off'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
                 )
-            
+
+                print('iti after opto')
                 self.sma.add_state(
                     state_name='drink_delay',
-                    state_timer=self.random_iti - self.opto_onset,
+                    state_timer=self.random_iti,
                     state_change_conditions={Bpod.Events.Tup: 'exit'},
                     output_actions=[]
-                )
- 
-            else:
-                    self.sma.add_state(
-                        state_name='wrong_side',
-                        state_timer=0.5,
-                        state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
-                        output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
                     )
 
-                    self.sma.add_state(
-                        state_name='water_delivery',
-                        state_timer=self.valvetime,
-                        state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'drink_delay'},
-                        output_actions=[self.valve_action]
-                    )    
-                    
-                    self.sma.add_state(
-                            state_name='drink_delay',
-                            state_timer=self.random_iti,
-                            state_change_conditions={Bpod.Events.Tup: 'exit'},
-                            output_actions=[]
-                        )
-            
+            elif self.opto_bool == 0:
+                
+                print('entering in wrong side')
+                self.sma.add_state(
+                    state_name='wrong_side',
+                    state_timer=0.5,
+                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                    output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
+                )
+
+                print('entering in waterdelivery')
+                self.sma.add_state(
+                    state_name='water_delivery',
+                    state_timer=self.valvetime,
+                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                    output_actions=[self.valve_action]
+                )    
+
+                print('iti regular trial')
+                self.sma.add_state(
+                        state_name='drink_delay',
+                        state_timer=self.random_iti,
+                        state_change_conditions={Bpod.Events.Tup: 'exit'},
+                        output_actions=[]
+                )
+
+            print(f"Lista degli stati: {self.sma.state_names}")
+
     def after_trial(self):
 
         if self.current_trial_states['water_delivery'][0][0] > 0: # check that the animal went to that state
@@ -491,6 +461,7 @@ class S4_5_single_pulse(Task):
                 self.reward_drunk += self.valve_l_reward 
             else:
                 self.reward_drunk += self.valve_r_reward 
+
             
         elif self.current_trial_states['wrong_side'][0][0] > 0: #
             self.outcome = "incorrect"

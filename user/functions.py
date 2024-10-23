@@ -19,18 +19,18 @@ def function1():
 
 
 def function6():
-    try:
-        utils.task.pulse_pal.trigger_pulse(1)
-        cam3.put_state('On')
-    except:
-        print(traceback.format_exc())
+   try:
+       utils.task.pulse_pal.trigger_pulse(1)
+       cam3.put_state('On')
+   except:
+       print(traceback.format_exc())
 
 def function7():
-    try:
-        utils.task.pulse_pal.trigger_pulse(2)
-        cam3.put_state('On')
-    except:
-        print(traceback.format_exc())    
+   try:
+       utils.task.pulse_pal.trigger_pulse(2)
+       cam3.put_state('Off')
+   except:
+       print(traceback.format_exc())    
 
 # close door2
 def function20():
