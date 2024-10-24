@@ -62,8 +62,8 @@ class S4_5_second_condition(Task):
         # This can cause that in some sessions, the overall prob_R over the entire session is larger than 0.5
         self.prob_Left_Right_blocks = 'balanced'
         # self.prob_Left_Right_blocks = 'indep'
-        self.opto_onset = 0.5 #seconds, its the time for opto onset after the animal make a choice
-
+        
+        self.duration_light = 1 ##seconds, its the duration of the illumination
 
         # OPTO PARAMETERS
 
@@ -261,19 +261,26 @@ class S4_5_second_condition(Task):
 
     def main_loop(self):
         
-        # OPTO Trial:
-        # it generates a random number between 0 and 1
-        random_number = random.random()
-
-        if random_number <= 0.25:  # 25% of possibility
-            self.opto_bool = 1
-        else:
-            self.opto_bool = 0
-
         self.probability = self.reward_side_vec_fixed_prob[self.current_trial][0]
         self.reward_side_number = self.reward_side_vec_fixed_prob[self.current_trial][1]
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
         self.random_iti = self.random_iti_values[self.current_trial]
+
+        # OPTO Trial:
+        # it generates a random number between 0 and 1
+        random_number = random.random()
+
+        if self.random_iti > self.duration_light:
+            if random_number <= 0.25:  # 25% of possibility
+                self.opto_bool = 1
+            else:
+                self.opto_bool = 0
+        else:
+            self.opto_bool = 0
+
+
+
+
 
         # OPTO PULSES: square pulse
     
@@ -423,7 +430,7 @@ class S4_5_second_condition(Task):
                 print('turning opto off')
                 self.sma.add_state(
                     state_name='light_off',
-                    state_timer=0.5,
+                    state_timer=0,
                     state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'light_off'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
                 )
@@ -431,38 +438,40 @@ class S4_5_second_condition(Task):
                 print('iti after opto')
                 self.sma.add_state(
                     state_name='drink_delay',
-                    state_timer=self.random_iti - 1.5,
+                    state_timer=self.random_iti - self.duration_light,
                     state_change_conditions={Bpod.Events.Tup: 'exit'},
                     output_actions=[]
-                    )
+                )
 
-            elif self.opto_bool == 0:
+                print('exit')
+
+            else:
                 
-                print('entering in wrong side')
-                self.sma.add_state(
-                    state_name='wrong_side',
-                    state_timer=0.5,
-                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
-                    output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
-                )
+                    print('entering in wrong side')
+                    self.sma.add_state(
+                        state_name='wrong_side',
+                        state_timer=0.5,
+                        state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                        output_actions=[(Bpod.OutputChannels.SoftCode, 1)]
+                        )
 
-                print('entering in waterdelivery')
-                self.sma.add_state(
-                    state_name='water_delivery',
-                    state_timer=self.valvetime,
-                    state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
-                    output_actions=[self.valve_action]
-                )    
+                    print('entering in waterdelivery')
+                    self.sma.add_state(
+                        state_name='water_delivery',
+                        state_timer=self.valvetime,
+                        state_change_conditions={Bpod.Events.Tup: 'drink_delay'},
+                        output_actions=[self.valve_action]
+                    )    
 
-                print('iti regular trial')
-                self.sma.add_state(
-                        state_name='drink_delay',
-                        state_timer=self.random_iti,
-                        state_change_conditions={Bpod.Events.Tup: 'exit'},
-                        output_actions=[]
-                )
-
-            print(f"Lista degli stati: {self.sma.state_names}")
+                    print('iti regular trial')
+                    self.sma.add_state(
+                            state_name='drink_delay',
+                            state_timer=self.random_iti,
+                            state_change_conditions={Bpod.Events.Tup: 'exit'},
+                            output_actions=[]
+                    )
+                    print('exit')
+                    print(f"Lista degli stati: {self.sma.state_names}")
 
     def after_trial(self):
 
