@@ -32,7 +32,7 @@ else:
     from academy.pulse_pal import FakePulsePal as PulsePal
 
 
-class S4_5_second_condition(Task):
+class S4_5_third_condition(Task):
 
     def __init__(self):
         super().__init__()
@@ -47,8 +47,8 @@ class S4_5_second_condition(Task):
 
         self.trials_max = 16754
         self.N_blocks = 100
-        self.prob_right_values = [0.9,0.8]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
-        
+        self.prob_right_values = [0.9, 0.8]  # TO CHANGE if you want the prob_Right to be ONLY 0.8 and 0.2, then make this list prob_right_values = [0.8]
+        #self.prob_right_values = [0.9, 0.8, 0.7, 0.6]
         self.N_trials = 1000
         self.mean_x = 30
         self.trial_count = 0
@@ -62,9 +62,8 @@ class S4_5_second_condition(Task):
         # This can cause that in some sessions, the overall prob_R over the entire session is larger than 0.5
         self.prob_Left_Right_blocks = 'balanced'
         # self.prob_Left_Right_blocks = 'indep'
+        self.opto_onset = 0.5 
         
-        self.duration_light = 1.5 ##seconds, its the duration of the illumination + 0.5 s of the opto onset
-
         # OPTO PARAMETERS
 
    
@@ -251,9 +250,9 @@ class S4_5_second_condition(Task):
                 #Generate the vector tailored ITIs values (from 1 to 30 sec, mean=5 sec)
         self.random_iti_values = custom_random_iti(self.trials_max, 1)
 
-        #print("block_duration_vec: ", self.block_duration_vec)
-        #print("probs_vector: ", self.probs_vector)
-        #print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
+        print("block_duration_vec: ", self.block_duration_vec)
+        print("probs_vector: ", self.probs_vector)
+        print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
         #print("Tailored ITI values: ", self.random_iti_values)
 
     def configure_gui(self):  # Variables that appear in the GUI
@@ -265,27 +264,28 @@ class S4_5_second_condition(Task):
         self.reward_side_number = self.reward_side_vec_fixed_prob[self.current_trial][1]
         self.block_identity = self.reward_side_vec_fixed_prob[self.current_trial][2]
         self.random_iti = self.random_iti_values[self.current_trial]
-
+        
+        
         # OPTO Trial:
         # it generates a random number between 0 and 1
         random_number = random.random()
+        self.duration_light = 0
 
-        if self.random_iti > self.duration_light:
-            if random_number <= 0.25:  # 25% of possibility
+        if 0.5 < self.random_iti <= 10:
+            if random_number <= 0.40:  # 40% of possibility
                 self.opto_bool = 1
+                self.duration_light = self.random_iti - self.opto_onset
+                pulse1 = self.pulse_pal.create_square_pulse(self.duration_light, 0, 0.2, 5) # define opto pulse
+                self.pulse_pal.assign_pulse(pulse1, 1)
             else:
                 self.opto_bool = 0
         else:
             self.opto_bool = 0
 
 
-
-
-
         # OPTO PULSES: square pulse
     
-        pulse1 = self.pulse_pal.create_square_pulse(1, 0, 0.2, 5)
-        self.pulse_pal.assign_pulse(pulse1, 1)
+
 
         #pulse2 = self.pulse_pal.create_square_pulse(0, 0, 0, 5)
         #self.pulse_pal.assign_pulse(pulse2, 2)
@@ -296,6 +296,9 @@ class S4_5_second_condition(Task):
         print("probability: ", self.probability)
         print("reward_side_number: ", self.reward_side_number)
         print("opto_bool: ", self.opto_bool)
+        print("light duration: ", self.duration_light)
+        print("iti: ", self.random_iti)
+        
 
 
         if settings.BOX_NAME == 9:
@@ -416,32 +419,33 @@ class S4_5_second_condition(Task):
                 print('entering in wait opto')
                 self.sma.add_state(
                     state_name='wait_opto',
-                    state_timer= 0.5,
+                    state_timer=  self.opto_onset,
                     state_change_conditions={Bpod.Events.Tup: 'light_on'},
                     output_actions=[]
                 )    
                 print('turning opto on')
                 self.sma.add_state(
                     state_name='light_on',
-                    state_timer= 1,
+                    state_timer= self.duration_light,
                     state_change_conditions={Bpod.Events.Tup: 'light_off', self.correct_poke_side: 'light_on'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 6)]
                 )    
                 print('turning opto off')
+
                 self.sma.add_state(
                     state_name='light_off',
                     state_timer=0,
                     state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.correct_poke_side: 'light_off'},
                     output_actions=[(Bpod.OutputChannels.SoftCode, 7)]
                 )
-
-                print('iti after opto')
+                print('iti after opto trial')
                 self.sma.add_state(
-                    state_name='drink_delay',
-                    state_timer=self.random_iti - self.duration_light,
-                    state_change_conditions={Bpod.Events.Tup: 'exit'},
-                    output_actions=[]
+                        state_name='drink_delay',
+                        state_timer=0,
+                        state_change_conditions={Bpod.Events.Tup: 'exit'},
+                        output_actions=[]
                 )
+
 
                 print('exit')
 

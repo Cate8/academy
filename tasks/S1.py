@@ -35,7 +35,7 @@ class S1(Task):
         self.trials_with_same_side = 20
         self.trial_count = 0
         self.same_side_count = 0
-        self.duration_max = 45*60  # 45 min finished the task 
+        self.duration_max = 20*60  # 45 min finished the task 
         self.duration_min = 30*60  # 30 min door opens 
 
         # pumps
