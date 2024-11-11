@@ -268,13 +268,11 @@ class S4_5_third_condition(Task):
         
         # OPTO Trial:
         # it generates a random number between 0 and 1
-        # Generate a random number that is either 0 or 1 with 50% probability
-        
+        random_number = random.random()
         self.duration_light = 0
 
         if 0.5 < self.random_iti <= 10:
-            random_number = random.randint(0, 1)
-            if random_number == 1:  # 50% of possibility
+            if random_number <= 0.4:  # 50% of possibility
                 self.opto_bool = 1
                 self.duration_light = self.random_iti - self.opto_onset
                 pulse1 = self.pulse_pal.create_square_pulse(self.duration_light, 0, 0.2, 5) # define opto pulse
