@@ -4,10 +4,10 @@
 Starts with centre port LED ON. then side (L/R) water port LED ON + and it needs a nosepoke in the right lickport to get the automatic delivery of water.
 All the LEDs stay ON until poke or timeup.
 
-SECOND CONDITION batch_B (oct 2024): Given that mPFC activity may not be involved in choice maintenance, perhaps it is involved in the choice value updating.  
-To test this, this second stimulation condition and photo-inhibit is going to be deliverd right after reward delivery (0.5 past side poke, in both correct and error trials).
-This would give us a lot of OFF trials to compare with (essentially all trials with no stimulation would be OFF trials) and could acquire ON trials at a faster speed
-(e.g. 20% of total trials could be opto_bool=1; that gives you around 40-50 ON trials per session per mouse, 200-250 per week per mouse).
+THIRD CONDITION batch_B (oct 2024): Given that mPFC activity may not be involved in choice maintenance, perhaps it is involved in the choice value updating.  
+To test this, this second stimulation condition and photo-inhibit is going to be deliverd right after reward delivery, during ALL iti long, in just 
+trials in which iti is > than opto onset 0.5 s and shorter than 10 sec. (0.5 past side poke, in both correct and error trials).
+
 ######  PORTS INFO  #######
 
 Port 1 - Right port
@@ -268,11 +268,13 @@ class S4_5_third_condition(Task):
         
         # OPTO Trial:
         # it generates a random number between 0 and 1
-        random_number = random.random()
+        # Generate a random number that is either 0 or 1 with 50% probability
+        
         self.duration_light = 0
 
         if 0.5 < self.random_iti <= 10:
-            if random_number <= 0.40:  # 40% of possibility
+            random_number = random.randint(0, 1)
+            if random_number == 1:  # 50% of possibility
                 self.opto_bool = 1
                 self.duration_light = self.random_iti - self.opto_onset
                 pulse1 = self.pulse_pal.create_square_pulse(self.duration_light, 0, 0.2, 5) # define opto pulse
