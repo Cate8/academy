@@ -153,7 +153,7 @@ class neurolux(Task):
         else:
             self.sma.add_state(
                 state_name='center_light',
-                state_timer=10000
+                state_timer=10000,
                 state_change_conditions={Bpod.Events.Tup: 'drink_delay', self.centre_poke: 'side_light'},
                 output_actions=[self.centre_light_LED]
             )

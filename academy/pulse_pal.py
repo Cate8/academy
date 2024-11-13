@@ -485,7 +485,7 @@ class PulsePal:
     # methods to create different types of pulses
     # need to return (pulse_width=float, voltages=[floats])
     @staticmethod
-    def create_square_pulse(duration, duration_ramp_in, duration_ramp_off, voltage, samples_per_second= 1000):
+    def create_square_pulse(duration, duration_ramp_in, duration_ramp_off, voltage, samples_per_second= 500):
         duration_samples = int(duration * samples_per_second)
         duration_ramp_in_samples = duration_ramp_in * samples_per_second
         duration_ramp_off_samples = duration_ramp_off * samples_per_second
