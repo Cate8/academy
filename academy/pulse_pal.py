@@ -982,9 +982,6 @@ class PulsePalError(Exception):
 class PulsePal:
     def __init__(self, address, channel=1):
 
-        self.com = PulsePalObject()
-        self.com.connect(address)
-
         self.com = PulsePalObject(port_name=address)
         
         self.channel = channel

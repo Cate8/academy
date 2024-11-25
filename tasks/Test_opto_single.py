@@ -46,7 +46,7 @@ class Test_opto_single(Task):
 
 
     def main_loop(self):
-        self.max_dur_light = 10
+        self.max_dur_light = 1
 
 
         # luz continua
