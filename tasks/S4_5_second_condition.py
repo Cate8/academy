@@ -279,9 +279,6 @@ class S4_5_second_condition(Task):
             self.opto_bool = 0
 
 
-
-
-
         # OPTO PULSES: square pulse
     
         pulse1 = self.pulse_pal.create_square_pulse(1, 0, 0.2, 5)

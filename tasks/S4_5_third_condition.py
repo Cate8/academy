@@ -255,6 +255,10 @@ class S4_5_third_condition(Task):
         print("reward_side_vec_fixed_prob: ", self.reward_side_vec_fixed_prob)
         #print("Tailored ITI values: ", self.random_iti_values)
 
+
+        pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5, samples_per_second=500)
+        self.pulse_pal.assign_pulse(pulse2, 2)
+
     def configure_gui(self):  # Variables that appear in the GUI
         self.gui_input = ['trials_max', 'max_dur_light']
 
@@ -275,7 +279,8 @@ class S4_5_third_condition(Task):
             if random_number <= 0.4:  # 50% of possibility
                 self.opto_bool = 1
                 self.duration_light = self.random_iti - self.opto_onset
-                pulse1 = self.pulse_pal.create_square_pulse(self.duration_light, 0, 0.2, 5) # define opto pulse
+                print("----sending the pulse with duration: ", str(self.duration_light))
+                pulse1 = self.pulse_pal.create_square_pulse(self.duration_light, 0, 0.2, 5, samples_per_second=500) # define opto pulse
                 self.pulse_pal.assign_pulse(pulse1, 1)
             else:
                 self.opto_bool = 0
@@ -285,10 +290,6 @@ class S4_5_third_condition(Task):
 
         # OPTO PULSES: square pulse
     
-
-
-        #pulse2 = self.pulse_pal.create_square_pulse(0, 0, 0, 5)
-        #self.pulse_pal.assign_pulse(pulse2, 2)
 
 
         print("current_trial: ", self.current_trial)

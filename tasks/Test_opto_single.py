@@ -46,15 +46,15 @@ class Test_opto_single(Task):
 
 
     def main_loop(self):
-        self.max_dur_light = 1
+        self.max_dur_light = 10
 
 
         # luz continua
-        pulse1 = self.pulse_pal.create_square_pulse(self.max_dur_light, 0, 0.2, 5)
+        pulse1 = self.pulse_pal.create_square_pulse(self.max_dur_light, 0, 0.2, 5, samples_per_second=500)
         self.pulse_pal.assign_pulse(pulse1, 1)
 
-        # pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5)
-        # self.pulse_pal.assign_pulse(pulse2, 2) #use it if ypu need to stop the pulse before one sec (or the regular duration) 
+        pulse2 = self.pulse_pal.create_square_pulse(0.2, 0, 0.2, 5, samples_per_second=500)
+        self.pulse_pal.assign_pulse(pulse2, 2) #use it if ypu need to stop the pulse before one sec (or the regular duration) 
 
 
         # tren de pulsos
@@ -65,26 +65,24 @@ class Test_opto_single(Task):
         #self.pulse_pal.assign_pulse(pulse2, 2)
 
 
-
-
         self.sma.add_state(
             state_name='Start_task',
-            state_timer=2,
+            state_timer=0,
             state_change_conditions={Bpod.Events.Tup: 'Light_on'},
             output_actions=[])
 
 
         self.sma.add_state(
             state_name='Light_on',
-            state_timer=1,
+            state_timer=0.5,
             state_change_conditions={Bpod.Events.Tup: 'Light_off'},
             output_actions=[(Bpod.OutputChannels.SoftCode, 6), self.centre_light_LED])
 
         self.sma.add_state(
             state_name='Light_off',
-            state_timer=3,
+            state_timer=0.5,
             state_change_conditions={Bpod.Events.Tup: 'exit'},
-            output_actions=[(Bpod.OutputChannels.SoftCode, 7)])
+            output_actions=[])
 
     def after_trial(self):
         self.register_value('reward_drunk', 0)
