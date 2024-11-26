@@ -434,10 +434,8 @@
 from decimal import Decimal
 import numpy as np
 import math
-
-
-import numpy as np
 import serial
+import time
 
 
 class ArCom(object):
@@ -1015,7 +1013,13 @@ class PulsePal:
         pulse_width = pulse[0]
         voltages = pulse[1]
 
-        self.com.sendCustomWaveform(pulse_number, pulse_width, voltages)
+        try:
+            self.com.sendCustomWaveform(pulse_number, pulse_width, voltages)
+        except:
+            time.sleep(0.1)
+            self.com.sendCustomWaveform(pulse_number, pulse_width, voltages)
+            print("------------- pulse assigned in second attempt")
+            
         self.pulse_width[pulse_number] = pulse_width
 
         #self.com.programOutputChannelParam('customTrainID', self.channel, pulse_number)
@@ -1023,10 +1027,18 @@ class PulsePal:
 
     # this is super fast, less than 1 ms
     def trigger_pulse(self, pulse_number):
-        self.com.programOutputChannelParam('customTrainID', self.channel, pulse_number)
-        self.com.programOutputChannelParam('phase1Duration', self.channel, self.pulse_width[pulse_number])
-        self.com.abortPulseTrains()
-        self.com.triggerOutputChannels(self.c1, self.c2, self.c3, self.c4)
+        try:
+            self.com.programOutputChannelParam('customTrainID', self.channel, pulse_number)
+            self.com.programOutputChannelParam('phase1Duration', self.channel, self.pulse_width[pulse_number])
+            self.com.abortPulseTrains()
+            self.com.triggerOutputChannels(self.c1, self.c2, self.c3, self.c4)
+        except:
+            time.sleep(0.1)
+            self.com.programOutputChannelParam('customTrainID', self.channel, pulse_number)
+            self.com.programOutputChannelParam('phase1Duration', self.channel, self.pulse_width[pulse_number])
+            self.com.abortPulseTrains()
+            self.com.triggerOutputChannels(self.c1, self.c2, self.c3, self.c4)
+            print("------------- pulse triggered in second attempt")
 
     def stop_pulse(self):
         self.com.abortPulseTrains()
